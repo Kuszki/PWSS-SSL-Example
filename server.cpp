@@ -107,6 +107,7 @@ bool Server::close(int sock)
 	});
 
 	m_clients.erase(sock);
+	m_sockets.erase(it);
 
 	return true;
 }
@@ -118,7 +119,7 @@ bool Server::loop(std::set<int>& read,
 {
 	int count = poll(m_sockets.data(), m_sockets.size(), timeout);
 
-	if (count == -1) return false;
+	if (count < 0) return false;
 	else if (count > 0)
 	{
 		if (m_sockets.front().revents & POLLIN)
@@ -142,6 +143,25 @@ bool Server::loop(std::set<int>& read,
 			}
 		}
 	}
+
+	return true;
+}
+
+bool Server::flag(int sock, short flags, bool mode)
+{
+	auto st = m_sockets.begin() + 1;
+	auto end = m_sockets.end();
+
+	auto it = std::find_if(st, end,
+	[sock] (const auto& i) -> bool
+	{
+		return i.fd == sock;
+	});
+
+	if (it == end) return false;
+
+	if (mode) it->events |= flags;
+	else it->events &= ~flags;
 
 	return true;
 }
@@ -171,7 +191,6 @@ bool Server::accept(void)
 		if (SSL_set_fd(ssl, sock) != 1 ||
 		    SSL_accept(ssl) != 1)
 		{
-			ERR_print_errors_fp(stderr);
 			SSL_free(ssl);
 			::close(sock);
 
@@ -179,7 +198,7 @@ bool Server::accept(void)
 		}
 	}
 
-	m_sockets.push_back({ sock, POLLHUP | POLLIN | POLLOUT, 0 });
+	m_sockets.push_back({ sock, POLLIN, 0 });
 	m_clients.emplace(std::piecewise_construct,
 	                  std::forward_as_tuple(sock),
 	                  std::forward_as_tuple(m_ctx, ssl, sock));

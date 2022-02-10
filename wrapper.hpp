@@ -71,6 +71,8 @@ class Wrapper
 
 		bool close(void);
 
+		int sock(void) const;
+
 		std::string name(void) const;
 
 		Wrapper& operator= (const Wrapper&) = delete;

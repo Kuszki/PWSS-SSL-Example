@@ -97,11 +97,7 @@ bool Client::open(const std::string& host, const uint16_t port)
 	{
 		m_ssl = ssl;
 	}
-	else
-	{
-		ERR_print_errors_fp(stderr);
-		SSL_free(ssl);
-	}
+	else SSL_free(ssl);
 
 	return m_ssl != nullptr;
 }

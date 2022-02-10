@@ -20,25 +20,6 @@
 
 #include "climain.hpp"
 
-boost::atomics::atomic_bool running = true;
-
-void signal(int value)
-{
-	running = false;
-}
-
-void reader(Client* client)
-{
-	while (running)
-	{
-		std::string msg;
-		std::getline(std::cin, msg);
-
-		if (!msg.empty())
-			client->send(msg);
-	}
-}
-
 bool parser(int argc, char* argv[],
             std::string& host,
             uint16_t& port,
@@ -78,6 +59,8 @@ bool parser(int argc, char* argv[],
 		{
 			std::cout << desc << std::endl; return 0;
 		}
+
+		vm.notify();
 	}
 	catch (const error &ex) { std::cerr << ex.what() << std::endl; return false; }
 
@@ -86,13 +69,12 @@ bool parser(int argc, char* argv[],
 
 int main(int argc, char* argv[])
 {
-	std::signal(SIGABRT, signal); // Błąd krytyczny (np. libc)
-	std::signal(SIGINT, signal); // Kombinacja CTRL+C w terminalu
-	std::signal(SIGTERM, signal); // Proces zakonczony (np. kill)
-
-	std::string cert, key, ca, data;
+	std::string cert, key, ca;
 	std::string host = "localhost";
 	uint16_t port = 8080;
+
+	std::string buff;
+	buff.reserve(1024);
 
 	Client* client = nullptr;
 
@@ -109,16 +91,31 @@ int main(int argc, char* argv[])
 		std::cerr << "Unable to open connection" << std::endl; return -1;
 	}
 
-	boost::thread thread(reader, client);
+	pollfd list[] = {
+	     { client->sock(), POLLIN, 0},
+	     { 0, POLLIN, 0 }
+	};
 
-	while (client->recv(data))
+	std::cin.clear();
+
+	while (poll(list, 2, -1) > 0)
 	{
-		std::cout << data; data.clear();
+		if (list[0].revents & POLLIN)
+		{
+			if (!client->recv(buff)) return -1;
+			else { std::cout << buff; buff.clear(); }
+		}
+
+		if (list[1].revents & POLLIN)
+		{
+			std::getline(std::cin, buff);
+
+			if (!client->send(buff)) return -2;
+			else buff.clear();
+		}
 	}
 
-	running = false;
-	thread.join();
-
 	delete client;
+
 	return 0;
 }

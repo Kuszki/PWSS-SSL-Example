@@ -22,12 +22,9 @@
 #define CLIMAIN_HPP
 
 #include <boost/program_options.hpp>
-#include <boost/atomic.hpp>
-#include <boost/thread.hpp>
 
 #include <iostream>
 #include <fstream>
-#include <csignal>
 #include <string>
 
 #include "client.hpp"

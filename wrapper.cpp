@@ -99,6 +99,11 @@ bool Wrapper::close(void)
 	return true;
 }
 
+int Wrapper::sock(void) const
+{
+	return m_sock;
+}
+
 std::string Wrapper::name(void) const
 {
 	if (!m_sock) return std::string();

@@ -22,14 +22,10 @@
 #define SRVMAIN_HPP
 
 #include <boost/program_options.hpp>
-#include <boost/atomic.hpp>
 
 #include <iostream>
 #include <fstream>
-#include <csignal>
-#include <iomanip>
 #include <string>
-#include <chrono>
 
 #include "server.hpp"
 

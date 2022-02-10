@@ -71,6 +71,10 @@ class Server : public Wrapper
 		          std::set<int>& open,
 		          const time_t timeout = -1);
 
+		bool flag(int sock,
+		          short flags,
+		          bool mode);
+
 		std::string name(int sock) const;
 
 		std::set<int> list(void) const;
