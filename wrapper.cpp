@@ -55,9 +55,14 @@ bool Wrapper::init(const std::string& cert, const std::string& key, const std::s
 
 	bool ok = m_ctx != nullptr;
 
-	ok = ok && SSL_CTX_use_certificate_file(m_ctx, cert.c_str(), SSL_FILETYPE_PEM);
-	ok = ok && SSL_CTX_use_PrivateKey_file(m_ctx, key.c_str(), SSL_FILETYPE_PEM);
-	ok = ok && SSL_CTX_load_verify_locations(m_ctx, ca.c_str(), nullptr);
+	if (!cert.empty())
+		ok = ok && SSL_CTX_use_certificate_file(m_ctx, cert.c_str(), SSL_FILETYPE_PEM);
+
+	if (!key.empty())
+		ok = ok && SSL_CTX_use_PrivateKey_file(m_ctx, key.c_str(), SSL_FILETYPE_PEM);
+
+	if (!ca.empty())
+		ok = ok && SSL_CTX_load_verify_locations(m_ctx, ca.c_str(), nullptr);
 
 	if (ok)
 	{

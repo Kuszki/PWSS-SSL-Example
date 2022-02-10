@@ -171,6 +171,7 @@ bool Server::accept(void)
 		if (SSL_set_fd(ssl, sock) != 1 ||
 		    SSL_accept(ssl) != 1)
 		{
+			ERR_print_errors_fp(stderr);
 			SSL_free(ssl);
 			::close(sock);
 

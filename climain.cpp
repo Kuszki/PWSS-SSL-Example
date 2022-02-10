@@ -18,28 +18,107 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include <iostream>
+#include "climain.hpp"
 
-#include "client.hpp"
+boost::atomics::atomic_bool running = true;
 
-int main(int argc, char* argp[])
+void signal(int value)
 {
-	std::string vect;
+	running = false;
+}
 
+void reader(Client* client)
+{
+	while (running)
+	{
+		std::string msg;
+		std::getline(std::cin, msg);
 
+		if (!msg.empty())
+			client->send(msg);
+	}
+}
 
-	Client cli;
+bool parser(int argc, char* argv[],
+            std::string& host,
+            uint16_t& port,
+            std::string& cert,
+            std::string& key,
+            std::string& ca)
+{
+	using namespace boost::program_options;
 
-	std::cout << "init " << cli.init("/home/kuszki/Projekty/SSL-Keys/client_a.crt",
-	                                 "/home/kuszki/Projekty/SSL-Keys/client_a.key",
-	                                 "/home/kuszki/Projekty/SSL-Keys/rootCA.crt")
-	          << std::endl;
+	try
+	{
+		options_description desc("Options");
+		variables_map vm;
 
-	std::cout << "open " << cli.open("localhost", 8080) << std::endl;
-	std::cout << "send " << cli.send("asdasdasd") << std::endl;
-	std::cout << "recv " << cli.recv(vect) << std::endl;
+		desc.add_options()
 
-	std::cout << vect << std::endl;
+		          ("host", value<>(&host)->default_value("localhost")->required(), "Host name")
+		          ("port", value<>(&port)->default_value(8080)->required(), "Port number")
+		          ("cert", value<>(&cert)->required(), "X509 certyficate file")
+		          ("key", value<>(&key)->required(), "Private key file")
+		          ("ca", value<>(&ca)->required(), "CA root certyficate file")
 
+		          ("config", value<std::string>()->required(), "Use config form selected file")
+
+		          ("help,h", "Display help message");
+
+		store(parse_command_line(argc, argv, desc), vm);
+
+		if (vm.count("help")) { std::cout << desc << std::endl; return false; }
+		else if (vm.count("config"))
+		{
+			std::ifstream ifs(vm["config"].as<std::string>().c_str());
+			if (ifs) store(parse_config_file(ifs, desc), vm);
+		}
+
+		if (!vm.count("cert") || !vm.count("key") || !vm.count("ca"))
+		{
+			std::cout << desc << std::endl; return 0;
+		}
+	}
+	catch (const error &ex) { std::cerr << ex.what() << std::endl; return false; }
+
+	return true;
+}
+
+int main(int argc, char* argv[])
+{
+	std::signal(SIGABRT, signal); // Błąd krytyczny (np. libc)
+	std::signal(SIGINT, signal); // Kombinacja CTRL+C w terminalu
+	std::signal(SIGTERM, signal); // Proces zakonczony (np. kill)
+
+	std::string cert, key, ca, data;
+	std::string host = "localhost";
+	uint16_t port = 8080;
+
+	Client* client = nullptr;
+
+	if (!parser(argc, argv, host, port, cert, key, ca)) return 0;
+	else client = new Client();
+
+	if (!client->init(cert, key, ca))
+	{
+		std::cerr << "Unable to init SSL context" << std::endl; return -1;
+	}
+
+	if (!client->open(host, port))
+	{
+		std::cerr << "Unable to open connection" << std::endl; return -1;
+	}
+
+	boost::thread thread(reader, client);
+
+	while (client->recv(data))
+	{
+		std::cout << data; data.clear();
+	}
+
+	running = false;
+	thread.join();
+
+	delete client;
 	return 0;
 }
