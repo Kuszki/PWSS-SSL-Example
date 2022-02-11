@@ -3,11 +3,11 @@
 # PWSS-SSL-Example
 Przykładowy czat z wykorzystaniem SSL. Połaczeni klienci mają mozliwość wysyłania i odbioru wiadomości od wszystkich połączonych klientów.
 
-Połączenie z serwerem jest szyfrowane z wykorzystaniem OpenSSL. Zarówno klient, jak i serwer, wymagają zaufanego certyfikatu. Nazwy klientów wyświetlane są na podstawie nazwy zawartej w certyfikacie.
+Połączenie z serwerem jest szyfrowane z wykorzystaniem `OpenSSL`. Zarówno klient, jak i serwer, wymagają zaufanego certyfikatu. Nazwy klientów wyświetlane są na podstawie nazwy zawartej w certyfikacie.
 
 W celu nawiązania połączenia należy uruchomić serwer i klientów zadając w parametrach programu ścieżki plików z kluczem i certyfikatem oraz parametry połaczenia. Parsowanie argumentów przedstawiono z wykorzystaniem `Boost::Program_options`.
 
-Projekt stanowi przykład w ramach przedmiotu Programowanie w Środowisku Sieciowym. W celu zbudowania projektu należy wykorzystać narzędzie `CMake`.
+Projekt stanowi przykład w ramach przedmiotu `Programowanie w Środowisku Sieciowym`. W celu zbudowania projektu należy wykorzystać narzędzie `CMake`.
 
 ## Generowanie certyfikatów
 W celu wygenerowania certyfikatów dla serwera i klientów należy:
