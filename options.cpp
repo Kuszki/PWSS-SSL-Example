@@ -36,7 +36,7 @@ bool parser(int argc, char* argv[],
 
 		desc.add_options() // Utworzenie listy opcji
 
-		          ("host", value<>(&host)->default_value("localhost")->required(), "Host name")
+		          ("host", value<>(&host)->default_value("127.0.0.1")->required(), "Host name")
 		          ("port", value<>(&port)->default_value(8080)->required(), "Port number")
 		          ("cert", value<>(&cert)->required(), "X509 certyficate file")
 		          ("key", value<>(&key)->required(), "Private key file")
@@ -55,7 +55,7 @@ bool parser(int argc, char* argv[],
 		// Jeśli wybrano opcję wczytania ustawień s pliku - wczytanie ich z pliku
 		else if (vm.count("config"))
 		{
-			std::ifstream ifs(vm["config"].as<std::string>().c_str());
+			std::ifstream ifs(vm["config"].as<std::string>());
 			if (ifs) store(parse_config_file(ifs, desc), vm);
 		}
 

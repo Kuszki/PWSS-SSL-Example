@@ -19,6 +19,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "server.hpp"
+#include <sys/select.h>
 
 Server::Server(void)
 {
