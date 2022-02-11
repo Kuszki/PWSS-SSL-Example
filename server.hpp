@@ -24,58 +24,57 @@
 #include "wrapper.hpp"
 #include "client.hpp"
 
-#include <string>
-#include <vector>
-#include <map>
-#include <set>
-
+//! Klasa reprezentujaca serwer.
 class Server : public Wrapper
 {
 
 	protected:
 
-		std::map<int, Client> m_clients;
-		std::vector<pollfd> m_sockets;
+		std::map<int, Client> m_clients; //!< Mapa klientów.
+		std::vector<pollfd> m_sockets; //!< Lista monitorowanych gniazd.
 
 	public:
 
-		Server(Server&&) = delete;
-		Server(void);
+		Server(Server&&) = default;  //! Konstruktor przenoszący - domyślny.
+		Server(void); //!< Konstruktor domyślny.
 
-		virtual ~Server(void);
+		virtual ~Server(void);  //!< Destruktor.
 
-		bool start(const std::string& host = "127.0.0.1",
-		           const uint16_t port = 8080,
-		           const int queue = 10);
+		//! Uruchomienie serwera.
+		bool start(const std::string& host = "127.0.0.1", /*!< [in] Adres nasłuchiwania. */
+		           const uint16_t port = 8080, /*!< [in] Numer portu. */
+		           const int queue = 10 /*!< [in] Gługość kolejki. */);
 
-		bool send(const int sock,
-		          const std::vector<char>& data);
+		//! Wysłanie wektora danych do klienta.
+		bool send(const int sock, /*!< [in] Identyfikator klienta. */
+		          const std::vector<char>& data /*!< [in] Dane do wysłania. */);
 
-		bool send(const int sock,
-		          const std::string& data);
+		//! Wysłanie napisu do klienta.
+		bool send(const int sock, /*!< [in] Identyfikator klienta. */
+		          const std::string& data /*!< [in] Dane do wysłania. */);
 
-		bool recv(const int sock,
-		          std::vector<char>& data,
-		          size_t size = 1024);
+		bool recv(const int sock, /*!< [in] Identyfikator klienta. */
+		          std::vector<char>& data, /*!< [out] Bufor na dane. */
+		          size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
 
-		bool recv(const int sock,
-		          std::string& data,
-		          size_t size = 1024);
+		bool recv(const int sock, /*!< [in] Identyfikator klienta. */
+		          std::string& data, /*!< [out] Bufor na dane. */
+		          size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
 
-		bool close(int sock);
+		bool close(int sock /*!< [in] Identyfikator klienta. */);
 
-		bool accept(void);
+		bool accept(void); //!< Akceptacja nowego połaczenia.
 
-		bool loop(std::set<int>& read,
-		          std::set<int>& write,
-		          std::set<int>& open,
-		          const time_t timeout = -1);
+		bool loop(std::set<int>& read, /*!< [out] Zbiór klientów gotowych do odczytu. */
+		          std::set<int>& write, /*!< [out] Zbiór klientów gotowych do zapisu. */
+		          std::set<int>& open, /*!< [out] Zbiór nowo podłączonych klientów. */
+		          const time_t timeout = -1 /*!< [in] Maksymalny czas oczekiwania. */);
 
-		bool flag(int sock,
-		          short flags,
-		          bool mode);
+		bool flag(int sock, /*!< [in] Identyfikator klienta. */
+		          short flags, /*!< [in] Flagi do modyfikacji. */
+		          bool mode /*!< [in] Operacja na flagach. */);
 
-		std::string name(int sock) const;
+		std::string name(int sock /*!< [in] Identyfikator klienta. */) const;
 
 		std::set<int> list(void) const;
 

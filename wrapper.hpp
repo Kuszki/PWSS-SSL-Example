@@ -39,44 +39,49 @@
 
 #include <string>
 #include <vector>
+#include <map>
+#include <set>
 
+//! Klasa owijajaca gniazdo SSL.
 class Wrapper
 {
 
 	protected:
 
-		const SSL_METHOD* m_method = nullptr;
+		const SSL_METHOD* m_method = nullptr; //!< Metoda SSL.
 
-		SSL_CTX* m_ctx = nullptr;
-		SSL* m_ssl = nullptr;
+		SSL_CTX* m_ctx = nullptr; //!< Kontekst SSL.
+		SSL* m_ssl = nullptr; //!< Obiekt SSL.
 
-		bool m_shared = false;
-		int m_sock = 0;
+		bool m_shared = false; //!< Flaga współdzielenia kontekstu.
+		int m_sock = 0; //!< Identyfikator gniazda.
 
 	protected:
 
-		Wrapper(const Wrapper&) = delete;
-		Wrapper(Wrapper&& wrapper);
-		Wrapper(void);
+		Wrapper(const Wrapper&) = delete; //! Konstruktor kopiujący - usunięty.
+		Wrapper(Wrapper&& wrapper); //! Konstruktor przenoszący.
+		Wrapper(void); //!< Konstruktor domyślny.
 
 	public:
 
-		virtual ~Wrapper(void);
+		virtual ~Wrapper(void); //!< Destruktor.
 
-		bool init(const std::string& cert,
-		          const std::string& key,
-		          const std::string& ca);
+		//! Inicjalizacja kontekstu SSL nowym kontekstem.
+		bool init(const std::string& cert, /*!< [out] Ścieżka pliku z certyfikatem. */
+		          const std::string& key, /*!< [out] Ścieżka pliku z kluczem prywatnym. */
+		          const std::string& ca /*!< [out] Ścieżka pliku z certyfikatem głównym. */);
 
-		bool init(SSL_CTX* ctx);
+		//! Inicjalizacja kontekstu SSL kontekstem współdzielonym.
+		bool init(SSL_CTX* ctx /*!< Kontekst SSL. */);
 
-		bool close(void);
+		bool close(void); //!< Zamkniecie gniazda.
 
-		int sock(void) const;
+		int sock(void) const; //!< Pobranie identyfikatora gniazda.
 
-		std::string name(void) const;
+		std::string name(void) const; //!< Pobranie nazwy hosta.
 
-		Wrapper& operator= (const Wrapper&) = delete;
-		Wrapper& operator= (Wrapper&&) = delete;
+		Wrapper& operator= (const Wrapper&) = delete; //!< Operator przypisania (usuniety).
+		Wrapper& operator= (Wrapper&&) = delete; //!< Operator przeniesienia (usuniety).
 
 };
 

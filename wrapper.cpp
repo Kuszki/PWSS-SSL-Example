@@ -24,94 +24,97 @@ Wrapper::Wrapper(void) {}
 
 Wrapper::Wrapper(Wrapper&& wrapper)
 {
-	m_ctx = wrapper.m_ctx;
-	m_ssl = wrapper.m_ssl;
+	m_ctx = wrapper.m_ctx; // Przenieś kontekst
+	m_ssl = wrapper.m_ssl; // Przenieś obiekt SSL
 
-	m_shared = wrapper.m_shared;
-	m_sock = wrapper.m_sock;
+	m_shared = wrapper.m_shared; // Skopiuj informację o współdzieleniu kontekstu
+	m_sock = wrapper.m_sock; // Skopiuj deskryptor gniazda
 
-	wrapper.m_ctx = nullptr;
-	wrapper.m_ssl = nullptr;
+	wrapper.m_ctx = nullptr; // Wyzeruj kontekst SSL
+	wrapper.m_ssl = nullptr; // Wyzeruj obiekt SSL
 
-	wrapper.m_shared = false;
-	wrapper.m_sock = 0;
+	wrapper.m_shared = false; // Wyzeruj informację o współdzieleniu
+	wrapper.m_sock = 0; // Wyzeruj deskryptor gniazda
 }
 
 Wrapper::~Wrapper(void)
 {
-	if (m_sock || m_ssl) this->close();
+	if (m_sock || m_ssl) this->close(); // Jeśli obiekt jest aktywny - zamknij go
 
-	if (m_ctx && !m_shared) SSL_CTX_free(m_ctx);
+	if (m_ctx && !m_shared) SSL_CTX_free(m_ctx); // Jeśli kontekst jest unikatowy - zwolnij go
 }
 
 bool Wrapper::init(const std::string& cert, const std::string& key, const std::string& ca)
 {
-	if (m_sock || m_ssl) return false;
+	if (m_sock || m_ssl) return false; // Jeśli obiekt jest aktywny - zakończ
 
-	if (m_ctx && !m_shared) SSL_CTX_free(m_ctx);
+	if (m_ctx && !m_shared) SSL_CTX_free(m_ctx); // Jeśli kontekst jest unikatowy - zwolnij go
 
-	m_ctx = SSL_CTX_new(m_method);
-	m_shared = false;
+	m_ctx = SSL_CTX_new(m_method); // Utwórz nowy kontekst SSL
+	m_shared = false; // Zeruj flagę współdzielenia kontekstu
 
-	bool ok = m_ctx != nullptr;
+	bool ok = m_ctx != nullptr; // Flaga powodzenia operacji
 
-	if (!cert.empty())
+	if (!cert.empty()) // Wczytaj certyfikat, jeśli podano
 		ok = ok && SSL_CTX_use_certificate_file(m_ctx, cert.c_str(), SSL_FILETYPE_PEM);
 
-	if (!key.empty())
+	if (!key.empty()) // Wczytaj klucz prywatny, jeśli podano
 		ok = ok && SSL_CTX_use_PrivateKey_file(m_ctx, key.c_str(), SSL_FILETYPE_PEM);
 
-	if (!ca.empty())
+	if (!ca.empty()) // Wczytaj certyfikat główny, jeśli podano
 		ok = ok && SSL_CTX_load_verify_locations(m_ctx, ca.c_str(), nullptr);
 
-	if (ok)
+	if (ok) // Jeśli wszystko OK, ustaw dodatkowe flagi
 	{
-		SSL_CTX_set_verify(m_ctx, SSL_VERIFY_PEER, nullptr);
-		SSL_CTX_set_options(m_ctx, SSL_OP_NO_SSLv2);
+		SSL_CTX_set_verify(m_ctx, SSL_VERIFY_PEER, nullptr); // Weryfikuj certyfikat peera
+		SSL_CTX_set_options(m_ctx, SSL_OP_NO_SSLv2); // Wyłącz starą wersję SSL
 	}
 
-	return ok;
+	return ok; // Zwróć powodzenie operacji
 }
 
 bool Wrapper::init(SSL_CTX* ctx)
 {
-	m_shared = true;
-	m_ctx = ctx;
+	// Jeśli kontekst jest unikatowy - zwolnij go
+	if (m_ctx && !m_shared) SSL_CTX_free(m_ctx);
 
-	return true;
+	m_shared = true; // Ustal flagę współdzielenia
+	m_ctx = ctx; // Przypisz współdzielony kontekst
+
+	return true; // Zwróć powodzenie operacji
 }
 
 bool Wrapper::close(void)
 {
-	if (!m_sock) return false;
+	if (!m_sock) return false; // Jesli obiekt nieaktywny - zakończ
 
-	if (m_ssl)
+	if (m_ssl) // Jeśli połączenie jest zaszyfrowane
 	{
-		SSL_shutdown(m_ssl);
-		SSL_free(m_ssl);
+		SSL_shutdown(m_ssl); // Zamknij połączenie SSL
+		SSL_free(m_ssl); // Zwolnij zasoby obiektu SSL
 	}
 
-	::close(m_sock);
+	::close(m_sock); // Zamknij gniazdo połączenia
 
-	m_ssl = nullptr;
-	m_sock = 0;
+	m_ssl = nullptr; // Zeruj wskaźnik na obiekt SSL
+	m_sock = 0; // Zeruj deskryptor gniazda
 
-	return true;
+	return true; // Zwróć powodzenie operacji
 }
 
 int Wrapper::sock(void) const
 {
-	return m_sock;
+	return m_sock; // Zwróć deskryptor gniazda
 }
 
 std::string Wrapper::name(void) const
 {
-	if (!m_sock) return std::string();
+	if (!m_sock) return std::string(); // Jesli obiekt nieaktywny - zakończ
 
-	if (!m_ssl)
+	if (!m_ssl) // Jeśli połączenie nie jest zaszyfrowane
 	{
-		sockaddr_in addr;
-		socklen_t len = sizeof(addr);
+		sockaddr_in addr; // Struktura adresu
+		socklen_t len = sizeof(addr); // Długość struktury
 
 		// Pobierz dane związane z gniazdem
 		getpeername(m_sock, (sockaddr*) &addr, &len);
@@ -120,19 +123,20 @@ std::string Wrapper::name(void) const
 		return inet_ntoa(addr.sin_addr);
 	}
 
+	// Pobierz certyfikat od połaczonego partnera
 	X509 *cert = SSL_get_peer_certificate(m_ssl);
 
-	if (cert != nullptr)
+	if (cert != nullptr) // Pobierz informacje o partnerze z certyfikatu
 	{
-		auto name = X509_get_subject_name(cert);
-		auto entry = X509_NAME_get_entry(name, 5);
-		auto data = X509_NAME_ENTRY_get_data(entry);
+		auto name = X509_get_subject_name(cert); // Dane partnera
+		auto entry = X509_NAME_get_entry(name, 5); // Obiekt nazwy (CN)
+		auto data = X509_NAME_ENTRY_get_data(entry); // Dane obiektu
 
 		std::string peer = (char*) ASN1_STRING_get0_data(data);
 
-		X509_free(cert);
+		X509_free(cert); // Zwolnij dane certyfikatu
 
-		return std::move(peer);
+		return std::move(peer); // Zwróć nazwę partnera
 	}
-	else return std::string();
+	else return std::string(); // Zwróć pustą nazwę gdy błąd
 }

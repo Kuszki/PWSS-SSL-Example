@@ -24,8 +24,13 @@ list(APPEND LIB_LIST SSL_wrapper
 
 target_compile_definitions(SSL_wrapper PUBLIC SSL_wrapper)
 
-add_executable(SSL_serwer srvmain.cpp srvmain.hpp)
-add_executable(SSL_klient climain.cpp climain.hpp)
+add_executable(SSL_serwer
+	srvmain.cpp srvmain.hpp
+	options.hpp options.cpp)
+
+add_executable(SSL_klient
+	climain.cpp climain.hpp
+	options.hpp options.cpp)
 
 target_link_libraries(SSL_serwer ${LIB_LIST})
 target_link_libraries(SSL_klient ${LIB_LIST})

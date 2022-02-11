@@ -28,18 +28,10 @@
 #include <string>
 
 #include "server.hpp"
+#include "options.hpp"
 
-void signal(int value);
-
-bool parser(int argc, char* argv[],
-            std::string& host,
-            uint16_t& port,
-            std::string& cert,
-            std::string& key,
-            std::string& ca);
-
-int main(int argc, char* argv[]);
-
-std::string timestr(void);
+//! Główna funkcja programu.
+int main(int argc, /*!< [in] Liczba argumentów. */
+         char* argp[] /*!< [in] Lista argumentów. */);
 
 #endif // SRVMAIN_HPP

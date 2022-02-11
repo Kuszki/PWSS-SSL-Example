@@ -22,29 +22,29 @@
 
 Client::Client(void)
 {
-	m_method = TLS_client_method();
+	m_method = TLS_client_method(); // Wybór metody SSL
 }
 
 Client::Client(SSL_CTX* ctx, SSL* ssl, int sock)
-     : Client()
+     : Client() // Wywołaj konstruktor domyślny
 {
-	m_shared = true;
+	m_shared = true; // Zapamiętaj status kontekstu
 
-	m_ctx = ctx;
-	m_ssl = ssl;
-	m_sock = sock;
+	m_ctx = ctx; // Zapamiętaj kontekst
+	m_ssl = ssl; // Zapamiętaj wrapper SSL
+	m_sock = sock; // Zapamiętaj deskryptor gniazda
 }
 
-Client::~Client(void) {}
+Client::~Client(void) {} // Destruktor dla zachowania porządku
 
 bool Client::open(const std::string& host, const uint16_t port)
 {
-	if (m_sock) this->close();
+	if (m_sock) this->close(); // Zamknij poprzednie połaczenie, jeśli aktywne
 
-	const std::string ports = std::to_string(port);
-	int sockfd(0);
+	const std::string ports = std::to_string(port); // Konwertuj port na łańcuch
+	int sockfd(0); // Roboczy deskryptor gniazda
 
-	addrinfo hints, *servinfo, *p;
+	addrinfo hints, *servinfo, *p; // Wskaźniki robocze na wyniki wyszukiwań
 
 	// Uzupełnij strukturę podpowiedzi
 	memset(&hints, 0, sizeof(hints));
@@ -54,7 +54,7 @@ bool Client::open(const std::string& host, const uint16_t port)
 	// Pobierz informacje o hoście zgodnie z podpowiedziami
 	const int ret = ::getaddrinfo(host.c_str(), ports.c_str(), &hints, &servinfo);
 
-	if (ret != 0) return false;
+	if (ret != 0) return false; // Jeśli nie udało się uzyskać odpowiedzi - zakończ
 
 	// Wyszukaj pierwszy pasujący adres
 	for (p = servinfo; p != nullptr; p = p->ai_next)
@@ -80,83 +80,97 @@ bool Client::open(const std::string& host, const uint16_t port)
 		else break; // Gdy wszystko OK pomiń resztę elementów
 	}
 
-	// Zwolnij zasoby informacji o adresie
-	freeaddrinfo(servinfo);
+	freeaddrinfo(servinfo); // Zwolnij zasoby informacji o adresie
 
-	if (sockfd == 0) return false;
-	else m_sock = sockfd;
+	if (sockfd == 0) return false; // Jeśli nie udało się połączyć - zakończ
+	else m_sock = sockfd; // W przeciwnym razie zapamiętaj deskryptor gniazda
 
-	if (!m_ctx) return true;
+	// W przypadku, gdy nie ma kontekstu SSL, połaczenie nie będzie szyfrowane
+	if (!m_ctx) return true; // Jeśli kontekst SSL nie istnieje - zakończ
 
-	SSL* ssl = SSL_new(m_ctx);
+	SSL* ssl = SSL_new(m_ctx); // Utwórz obiekt SSL na podstawie kontekstu
 
-	if (!ssl) return false;
+	if (!ssl) return false; // Jeśli nie udało się utworzyć obiektu - zakończ
 
-	if (SSL_set_fd(ssl, sockfd) == 1 &&
-	    SSL_connect(ssl) == 1)
+	if (SSL_set_fd(ssl, sockfd) == 1 && // Powiąż gniazdo z obiektem SSL
+	    SSL_connect(ssl) == 1) // Wynegocjuj warunki połączenia SSL
 	{
-		m_ssl = ssl;
+		m_ssl = ssl; // Jeśli wszystko się powiodło - zapamiętaj obiekt SSL
 	}
-	else SSL_free(ssl);
+	else SSL_free(ssl); // Jeśli nie - zwolnij obiekt SSL
 
-	return m_ssl != nullptr;
+	return m_ssl != nullptr; // Zwróć powodzenie operacji
 }
 
 bool Client::send(const std::vector<char>& data)
 {
-	if (!m_sock) return false;
+	if (!m_sock) return false; // Jeśli połczenie nie jest aktywne - zwróć błąd
 
-	const char* prt = data.data();
-	int size = data.size();
+	const char* prt = data.data(); // Dane do wysłania
+	int size = data.size(); // Liczba bajtów do wysłania
 
+	// Jeśli połączenie jest zaszyfrowane - wyślij stosując szyfrowanie
 	if (m_ssl) size -= SSL_write(m_ssl, prt, size);
+
+	// W przypadku nieszyfrowanego połaczenia - użyj klasycznego send
 	else size -= ::send(m_sock, prt, size, 0);
 
-	return size == 0;
+	return size == 0; // Jeśli wysłano wszystkie dane - zwróć powodzenie
 }
 
 bool Client::send(const std::string& data)
 {
-	if (!m_sock) return false;
+	if (!m_sock) return false; // Jeśli połczenie nie jest aktywne - zwróć błąd
 
-	const char* prt = data.data();
-	int size = data.size();
+	const char* prt = data.data(); // Dane do wysłania
+	int size = data.size(); // Liczba bajtów do wysłania
 
+	// Jeśli połączenie jest zaszyfrowane - wyślij stosując szyfrowanie
 	if (m_ssl) size -= SSL_write(m_ssl, prt, size);
+
+	// W przypadku nieszyfrowanego połaczenia - użyj klasycznego send
 	else size -= ::send(m_sock, prt, size, 0);
 
-	return size == 0;
+	return size == 0; // Jeśli wysłano wszystkie dane - zwróć powodzenie
 }
 
 bool Client::recv(std::vector<char>& data, size_t size)
 {
-	if (!m_sock) return false;
+	if (!m_sock) return false; // Jeśli połczenie nie jest aktywne - zwróć błąd
 
-	char buff[size];
-	int num = 0;
+	char buff[size]; // Bufor na dane
+	int num = 0; // Liczba odebranych bajtów
 
+	// Jeśli połączenie jest zaszyfrowane - czytaj stosując szyfrowanie
 	if (m_ssl) num = SSL_read(m_ssl, buff, size);
+
+	// W przypadku nieszyfrowanego połaczenia - użyj klasycznego recv
 	else num = ::recv(m_sock, buff, size, 0);
 
-	if (num <= 0) return false;
+	if (num <= 0) return false; // W przypadku błędu - zakończ
+
+	// W przypadku powodzenia - skopiuj odebrane dane z bufora do kontenera
 	else std::copy(buff, buff + num,
 	               std::back_inserter(data));
 
-	return true;
+	return true; // Zwróć powodzenie operacji
 }
 
 bool Client::recv(std::string& data, size_t size)
 {
-	if (!m_sock) return false;
+	if (!m_sock) return false; // Jeśli połczenie nie jest aktywne - zwróć błąd
 
-	char buff[size];
-	int num = 0;
+	char buff[size]; // Bufor na dane
+	int num = 0; // Liczba odebranych bajtów
 
+	// Jeśli połączenie jest zaszyfrowane - czytaj stosując szyfrowanie
 	if (m_ssl) num = SSL_read(m_ssl, buff, size);
+
+	// W przypadku nieszyfrowanego połaczenia - użyj klasycznego recv
 	else num = ::recv(m_sock, buff, size, 0);
 
-	if (num <= 0) return false;
-	else data.append(buff, num);
+	if (num <= 0) return false; // W przypadku błędu - zakończ
+	else data.append(buff, num); // Dopisz dane do bufora
 
-	return true;
+	return true; // Zwróć powodzenie operacji
 }

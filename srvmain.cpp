@@ -20,162 +20,101 @@
 
 #include "srvmain.hpp"
 
-bool parser(int argc, char* argv[],
-            std::string& host,
-            uint16_t& port,
-            std::string& cert,
-            std::string& key,
-            std::string& ca)
-{
-	using namespace boost::program_options;
-
-	try
-	{
-		options_description desc("Options");
-		variables_map vm;
-
-		desc.add_options()
-
-		          ("host", value<>(&host)->default_value("127.0.0.1")->required(), "Listen address")
-		          ("port", value<>(&port)->default_value(8080)->required(), "Port number")
-		          ("cert", value<>(&cert)->required(), "X509 certyficate file")
-		          ("key", value<>(&key)->required(), "Private key file")
-		          ("ca", value<std::string>(&ca)->required(), "CA root certyficate file")
-
-		          ("config", value<std::string>()->required(), "Use config form selected file")
-
-		          ("help,h", "Display help message");
-
-		store(parse_command_line(argc, argv, desc), vm);
-
-		if (vm.count("help")) { std::cout << desc << std::endl; return false; }
-		else if (vm.count("config"))
-		{
-			std::ifstream ifs(vm["config"].as<std::string>().c_str());
-			if (ifs)
-				store(parse_config_file(ifs, desc), vm);
-		}
-
-		if (!vm.count("cert") || !vm.count("key") || !vm.count("ca"))
-		{
-			std::cout << desc << std::endl; return 0;
-		}
-
-		vm.notify();
-
-	}
-	catch (const error &ex) { std::cerr << ex.what() << std::endl; return false; }
-
-	return true;
-}
-
 int main(int argc, char* argv[])
 {
-	std::map<int, std::string> queue;
-	std::set<int> read, write, open;
+	std::map<int, std::string> queue; // Kolejka komunikatów do klientów
+	std::set<int> read, write, open; // Zbiory na gotowych klientów
 
-	std::string cert, key, ca, data;
-	std::string host = "127.0.0.1";
-	uint16_t port = 8080;
+	std::string cert, key, ca; // Opcje kontekstu SSL
+	std::string host = "127.0.0.1"; // Adres nasłuchiwania
+	uint16_t port = 8080; // Numer portu serwera
 
-	std::string buff;
-	buff.reserve(1024);
+	std::string buff; // Bufor na dane
+	buff.reserve(1024); // Rezerwacja pamięci
 
-	Server* server = nullptr;
+	Server* server = nullptr; // Instancja serwera
 
+	// Przetworzenie opcji programu - w przypadku błędu zakończ program
 	if (!parser(argc, argv, host, port, cert, key, ca)) return 0;
-	else server = new Server();
+	else server = new Server(); // W przeciwnym razie utworzenie instancji serwera
 
-	if (!server->init(cert, key, ca))
+	if (!server->init(cert, key, ca)) // Inicjuj kontekst SSL
 	{
 		std::cerr << "Unable to init SSL context" << std::endl; return -1;
 	}
 
-	if (!server->start(host, port))
+	if (!server->start(host, port)) // Uruchom serwer
 	{
 		std::cerr << "Unable to start server" << std::endl; return -1;
 	}
 
-	while (server->loop(read, write, open))
+	// Pętla będzie wykonywana az do błędu `poll` lub odebrania sygnału zakończenia
+	while (server->loop(read, write, open)) // Sprawdź gotowość klientów
 	{
-		if (queue.empty() && read.empty() && open.empty()) continue;
+		const auto list = server->list(); // Pobierz listę klientów
+		const auto time = timestr(); // Pobierz aktualny czas
 
-		const auto list = server->list();
-		const auto time = timestr();
-
-		for (const auto& i : open)
+		for (const auto& i : open) // Sprawdź nowe połączenia
 		{
+			// Pobierz nazwę klienta na podstawie certyfikatu
 			const std::string name = server->name(i);
 
+			// Dodaj do kolejki wszystkich klientów informację o nowym połączeniu
 			for (const auto& k : list) if (k != i)
 			{
-				queue[k] += time + name + " joined the chat\n";
-				server->flag(k, POLLOUT, true);
+				queue[k] += time + name + " joined the chat\n"; // Wiadomość
+				server->flag(k, POLLOUT, true); // Monitoruj gniazdo (zapis)
 			}
 
 			std::cout << time << "Accepted client: '" << name << "'" << std::endl;
 		}
 
-		for (const auto& i : read)
+		for (const auto& i : read) // Pobierz dane od klientów
 		{
+			// Pobierz nazwę klienta na podstawie certyfikatu
 			const std::string name = server->name(i);
 
+			// Jeśli pobrano nowe dane, dodaj komunikat do kolekji klientów
 			if (server->recv(i, buff)) for (const auto& k : list)
 			{
-				if (k != i)
+				if (k != i) // Pomiń bieżącego klienta
 				{
-					queue[k] += time + name + " > " + buff + '\n';
-					server->flag(k, POLLOUT, true);
+					queue[k] += time + name + " > " + buff + '\n'; // Wiadomość
+					server->flag(k, POLLOUT, true); // Monitoruj gniazdo (zapis)
 				}
 			}
-			else
+			else // Jeśli nie udało się pobrać danych (rozłączenie lub błąd)
 			{
+				// Dodaj komunikat o rozłączeniu dla pozostałych klientów
 				for (const auto& k : list) if (k != i)
 				{
-					queue[k] += time + name + " leaved the chat\n";
-					server->flag(k, POLLOUT, true);
+					queue[k] += time + name + " leaved the chat\n"; // Wiadomość
+					server->flag(k, POLLOUT, true); // Monitoruj gniazdo (zapis)
 				}
 
-				server->close(i);
-				queue.erase(i);
+				server->close(i); // Zamknij połączenie
+				queue.erase(i); // Usuń kolejkę klienta
 
 				std::cout << time << "Dissconnected client: '" << name << "'" << std::endl;
 			}
 
-			buff.clear();
+			buff.clear(); // Wyczyść roboczy bufor na dane
 		}
 
-		for (const auto& i : write) if (queue.contains(i))
+		for (const auto& i : write) if (queue.contains(i)) // Wyślij dane do klientów
 		{
-			if (server->send(i, queue[i]))
+			if (server->send(i, queue[i])) // Jeśli udało się wysłać dane
 			{
-				server->flag(i, POLLOUT, false);
-				queue.erase(i);
+				server->flag(i, POLLOUT, false); // Nie monitoruj możliwości zapisu
+				queue.erase(i); // Usuń kolejkę zapisu klienta (dane są wysłane)
 			}
 		}
 
-		open.clear();
-		read.clear();
-		write.clear();
+		open.clear(); // Wyczyść listę nowych klientów
+		read.clear(); // Wyczyść listę gotowych do odczytu
+		write.clear(); // Wyczyść listę gotowych do zapisu
 	}
 
-	delete server;
-
-	return 0;
-}
-
-std::string timestr(void)
-{
-	char buffer[100];
-	time_t rawtime;
-	tm* timeinfo;
-
-	rawtime = time(nullptr);
-	timeinfo = localtime(&rawtime);
-
-	strftime(buffer, sizeof(buffer),
-	         "%d.%m.%Y %H:%M:%S\t",
-	         timeinfo);
-
-	return buffer;
+	delete server; // Usuń instancję serwera
+	return 0; // Zakończ program
 }

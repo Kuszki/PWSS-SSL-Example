@@ -18,45 +18,25 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
+#ifndef OPTIONS_HPP
+#define OPTIONS_HPP
 
-#include "wrapper.hpp"
+#include <boost/program_options.hpp>
 
-//! Klasa reprezentujaca klienta.
-class Client : public Wrapper
-{
+#include <iostream>
+#include <fstream>
+#include <string>
 
-	public:
+//! Przerwarzanie argumentów programu.
+bool parser(int argc, /*!< [in] Liczba argumentów. */
+            char* argv[], /*!< [in] Lista argumentów. */
+            std::string& host, /*!< [out] Nazwa hosta. */
+            uint16_t& port, /*!< [out] Numer portu. */
+            std::string& cert, /*!< [out] Ścieżka pliku z certyfikatem. */
+            std::string& key, /*!< [out] Ścieżka pliku z kluczem prywatnym. */
+            std::string& ca /*!< [out] Ścieżka pliku z certyfikatem głównym. */);
 
-		//! Konstruktor zawijający w obiekt.
-		Client(SSL_CTX* ctx, /*!< [in] Kontekst SSL. */
-		       SSL* ssl, /*!< [in] Obiekt SSL. */
-		       int sock /*!< [in] Deskryptor gniazda. */);
+//! Pobranie aktualnego czasu w formacie tekstowym.
+std::string timestr(void);
 
-		Client(Client&&) = default; //! Konstruktor przenoszący - domyślny.
-		Client(void); //!< Konstruktor domyślny.
-
-		virtual ~Client(void); //!< Destruktor.
-
-		//! Nawiązanie połączenia z wybranym serwerem.
-		bool open(const std::string& host = "localhost" /*!< [in] Nazwa hosta. */,
-		          const uint16_t port = 8080 /*!< [in] Numer portu. */);
-
-		//! Wysłanie wektora danych.
-		bool send(const std::vector<char>& data /*!< [in] Dane do wysłania. */);
-
-		//! Wysłanie napisu.
-		bool send(const std::string& data /*!< [in] Dane do wysłania. */);
-
-		//! Pobranie wektora danych.
-		bool recv(std::vector<char>& data, /*!< [out] Bufor na dane. */
-		          size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
-
-		//! Pobranie napisu.
-		bool recv(std::string& data, /*!< [out] Bufor na dane. */
-		          size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
-
-};
-
-#endif // CLIENT_HPP
+#endif // OPTIONS_HPP

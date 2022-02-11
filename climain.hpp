@@ -21,25 +21,15 @@
 #ifndef CLIMAIN_HPP
 #define CLIMAIN_HPP
 
-#include <boost/program_options.hpp>
-
 #include <iostream>
 #include <fstream>
 #include <string>
 
 #include "client.hpp"
+#include "options.hpp"
 
-void signal(int value);
-
-void reader(Client* client);
-
-bool parser(int argc, char* argv[],
-            std::string& host,
-            uint16_t& port,
-            std::string& cert,
-            std::string& key,
-            std::string& ca);
-
-int main(int argc, char* argp[]);
+//! Główna funkcja programu.
+int main(int argc, /*!< [in] Liczba argumentów. */
+         char* argp[] /*!< [in] Lista argumentów. */);
 
 #endif // CLIMAIN_HPP

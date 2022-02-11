@@ -20,102 +20,57 @@
 
 #include "climain.hpp"
 
-bool parser(int argc, char* argv[],
-            std::string& host,
-            uint16_t& port,
-            std::string& cert,
-            std::string& key,
-            std::string& ca)
-{
-	using namespace boost::program_options;
-
-	try
-	{
-		options_description desc("Options");
-		variables_map vm;
-
-		desc.add_options()
-
-		          ("host", value<>(&host)->default_value("localhost")->required(), "Host name")
-		          ("port", value<>(&port)->default_value(8080)->required(), "Port number")
-		          ("cert", value<>(&cert)->required(), "X509 certyficate file")
-		          ("key", value<>(&key)->required(), "Private key file")
-		          ("ca", value<>(&ca)->required(), "CA root certyficate file")
-
-		          ("config", value<std::string>()->required(), "Use config form selected file")
-
-		          ("help,h", "Display help message");
-
-		store(parse_command_line(argc, argv, desc), vm);
-
-		if (vm.count("help")) { std::cout << desc << std::endl; return false; }
-		else if (vm.count("config"))
-		{
-			std::ifstream ifs(vm["config"].as<std::string>().c_str());
-			if (ifs) store(parse_config_file(ifs, desc), vm);
-		}
-
-		if (!vm.count("cert") || !vm.count("key") || !vm.count("ca"))
-		{
-			std::cout << desc << std::endl; return 0;
-		}
-
-		vm.notify();
-	}
-	catch (const error &ex) { std::cerr << ex.what() << std::endl; return false; }
-
-	return true;
-}
-
 int main(int argc, char* argv[])
 {
-	std::string cert, key, ca;
-	std::string host = "localhost";
-	uint16_t port = 8080;
+	std::string cert, key, ca; // Konfiguracja SSL
+	std::string host = "localhost"; // Nazwa hosta
+	uint16_t port = 8080; // Numer portu serwera
 
-	std::string buff;
-	buff.reserve(1024);
+	std::string buff; // Bufor na dane
+	buff.reserve(1024); // Rezerwacja pamięci
 
-	Client* client = nullptr;
+	Client* client = nullptr; // Instancja klienta
 
+	// Przetworzenie opcji programu - w przypadku błędu zakończ program
 	if (!parser(argc, argv, host, port, cert, key, ca)) return 0;
-	else client = new Client();
+	else client = new Client(); // W przeciwnym wypadku utwórz instancje klienta
 
-	if (!client->init(cert, key, ca))
+	if (!client->init(cert, key, ca)) // Inicjuj kontekst SSL
 	{
 		std::cerr << "Unable to init SSL context" << std::endl; return -1;
 	}
 
-	if (!client->open(host, port))
+	if (!client->open(host, port)) // Nawiąż połączenie z serwerem
 	{
 		std::cerr << "Unable to open connection" << std::endl; return -1;
 	}
 
-	pollfd list[] = {
-	     { client->sock(), POLLIN, 0},
-	     { 0, POLLIN, 0 }
+	// Lista monitorowanych strumieni
+	pollfd list[] =
+	{
+	     { client->sock(), POLLIN, 0}, // Serwer
+	     { 0, POLLIN, 0 } // Standardowe wejście
 	};
 
-	std::cin.clear();
+	std::cin.clear(); // Wyczyść standardowe wejście
 
-	while (poll(list, 2, -1) > 0)
+	while (poll(list, 2, -1) > 0) // Sprawdź możliwości strumieni
 	{
-		if (list[0].revents & POLLIN)
+		if (list[0].revents & POLLIN) // Sprawdź, czy można odczytać z serwera
 		{
-			if (!client->recv(buff)) return -1;
-			else { std::cout << buff; buff.clear(); }
+			if (!client->recv(buff)) return -1; // W przypadku niepowodzenia zakończ program
+			else { std::cout << buff; buff.clear(); } // Wyświetl dane i wyczyść bufor
 		}
 
-		if (list[1].revents & POLLIN)
+		if (list[1].revents & POLLIN) // Sprawdź, czy można odczytać z terminala
 		{
-			std::getline(std::cin, buff);
+			std::getline(std::cin, buff); // Pobierz dane z terminala
 
-			if (!client->send(buff)) return -2;
-			else buff.clear();
+			if (!client->send(buff)) return -2; // Zakończ, jeśli nie udało się wysłać
+			else buff.clear(); // W przeciwnym razie wyczyść bufor (do ponownego użycia)
 		}
 	}
 
-	delete client;
-
-	return 0;
+	delete client; // Usuń instancje klienta
+	return 0; // Zakończ program
 }
