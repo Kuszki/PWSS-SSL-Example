@@ -21,10 +21,10 @@ W celu wygenerowania certyfikatów dla serwera i klientów należy:
 3) Utworzyć klucz prywatny serwera:
 > openssl genrsa -out server.key 2048
 
-4) Utworzyć certyfikat serwera:
+4) Utworzyć informacje o certyfikacie serwera:
 > openssl req -new -sha256 -key server.key -out server.csr
 
-5) Podpisać certyfikat serwera kluczem głównym:
+5) Utworzyć certyfikat serwera podpisany kluczem głównym:
 > openssl x509 -req -in server.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out server.crt -sha256
 
 Kroki 3, 4, 5 należy powtarzać w celu utworzenia kolejnych certyfiaktów (dla klientów):
