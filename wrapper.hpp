@@ -66,29 +66,29 @@ class Wrapper
 
 		enum class error : int
 		{
-			no_error = 0,
+			no_error = 0, //!< Brak błędu.
 
-			no_active_socket,
-			is_active_socket,
+			no_active_socket, //!< Brak otwartego gniazda.
+			is_active_socket, //!< Istnieje otwarte gniazdo.
 
-			create_context_fail,
-			create_socket_fail,
-			create_sslobj_fail,
+			create_context_fail, //!< Błąd tworzenia kontekstu SSL.
+			create_socket_fail, //!< Błąd tworzenia gniazda.
+			create_sslobj_fail, //!< Bład tworzenia obiektu SSL.
 
-			pton_call_error,
-			sockopt_call_error,
-			bind_call_error,
-			listen_call_error,
-			poll_call_error,
-			accept_call_error,
-			sslwrap_call_error,
-			addrinfo_call_error,
+			pton_call_error, //!< Błąd w wywołaniu pton.
+			sockopt_call_error, //!< Błąd w ustawianiu opcji gniazda.
+			bind_call_error, //!< Bład w wywołaniu bind.
+			listen_call_error, //!< Bład w wywołaniu listen.
+			poll_call_error, //!< Błąd w wywołaniu poll.
+			accept_call_error, //!< Błąd w wywołaniu accept.
+			sslwrap_call_error, //!< Błąd podczas owijania gniazdna.
+			addrinfo_call_error, //!< Błąd podczas tłumaczenia adresu.
 
-			send_call_error,
-			recv_call_error,
+			send_call_error, //!< Błąd podczas wywołania send.
+			recv_call_error, //!< Błąd podczas wywołania recv.
 
-			no_client_found,
-			no_server_found
+			no_client_found, //!< Nie znaleziono zadanego klienta.
+			no_server_found //!< Brak połączenia z serwerem.
 		};
 
 		virtual ~Wrapper(void); //!< Destruktor.
@@ -110,7 +110,7 @@ class Wrapper
 		Wrapper& operator= (const Wrapper&) = delete; //!< Operator przypisania (usuniety).
 		Wrapper& operator= (Wrapper&&) = delete; //!< Operator przeniesienia (usuniety).
 
-		static bool is_ok(Wrapper::error err);
+		static bool is_ok(Wrapper::error err /*!< Kod błędu. */); //!< Sprawdzenie, czy nie wystąpił błąd.
 
 };
 
