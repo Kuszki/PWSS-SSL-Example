@@ -44,6 +44,10 @@ int main(int argc, char* argv[])
 	{
 		std::cerr << "Unable to open connection" << std::endl; return -1;
 	}
+	else
+	{
+		std::cout << "Connected with '" << client->name() << "'" << std::endl;
+	}
 
 	// Lista monitorowanych strumieni
 	pollfd list[] =

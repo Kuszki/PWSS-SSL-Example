@@ -9,6 +9,24 @@ W celu nawiązania połączenia należy uruchomić serwer i klientów zadając w
 
 Projekt stanowi przykład w ramach przedmiotu `Programowanie w Środowisku Sieciowym`. W celu zbudowania projektu należy wykorzystać narzędzie `CMake`.
 
+## Działanie serwera
+
+Serwer nasłuchuje połaczeń na wybranym interfejsie i porcie. Jeśli serwer zostanie zainicjalizowany z podaniem ścieżki do certyfikatu i klucza prywatnego będzie on wymagał szyfrowania połączeń przychodzących i będzie weryfikował certyfikaty klientów. W przypadku posiadania jedynie certyfikatu "self-signed" należy przekazać do serwera certyfikat CA, którym podpisano certyfikaty klientów.
+
+Metoda "loop" serwera pozwala wykonać pętlę obsługi klientów - automatycznie akceptując nowe połaczenia. Metoda zwraca zbiory opisujace nowych klientów, klientów gotowych do odczytu i klientów gotowych do zapisu. Należy zamodzielnie zaimplementować obsługę klientów zgodnie z potrzebą - podobnie należy zaimplementować obsługę zamykania połączenia i ręcznie wywołać metodę "close" dla wybranego id klienta.
+
+Po przechwyceniu sygnału z systemu operacyjnego metoda "loop" kończy pracę zwracając błąd - oznacza to, że należy najprawdopodobniej zakończyć program. Destruktor serwera zamknie wszystkie połączenia i zwolni związane z nimi zasoby.
+
+Serwer rozpoznaje nazwę klienta bezpośrednio z treści certyfikatu - wyświetla pole "CN". W przypadku połaczeń nieszyfrowanych wyświetlany jest adres IP klienta.
+
+Przykładowa implementacja serwera z wykorzystaniem dostarczonej klasy jest umieszczona w pliku `srvmain.cpp`. Serwer odbiera od klientów dane i wysyła je do wszystkich pozostałych klientów.
+
+## Działanie klienta
+
+Klient umożliwia nawiązanie połączenia z wybranym serwerem. Jeśli klient zostanie zainicjalizowany z podaniem ścieżki do certyfikatu i klucza prywatnego będzie on wymagał szyfrowania połączenia i będzie weryfikował certyfikat serwera. W przypadku posiadania jedynie certyfikatu "self-signed" należy przekazać do programu certyfikat CA, którym podpisano certyfikat serwera.
+
+Implementacja wykorzystania klasy klienta, zawarta w pliku `climain.cpp`, wykorzystuje jeden wątek. Nieblokujaca obsługa przychodzących danych z serwera oraz wejścia terminala została zrealizowana za pomocą funkcji "poll". Po przechwyceniu sygnału z systemu operacyjnego metoda "loop" kończy pracę zwracając błąd - oznacza to, że należy zakończyć program. Destruktor serwera zamknie wszystkie połączenia i zwolni związane z nimi zasoby.
+
 ## Generowanie certyfikatów
 W celu wygenerowania certyfikatów dla serwera i klientów należy:
 
@@ -29,7 +47,7 @@ W celu wygenerowania certyfikatów dla serwera i klientów należy:
 
 Kroki 3, 4, 5 należy powtarzać w celu utworzenia kolejnych certyfiaktów (dla klientów):
 > openssl genrsa -out client.key 2048
-> 
+>
 > openssl req -new -sha256 -key client.key -out client.csr
-> 
+>
 > openssl x509 -req -in client.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out client.crt -sha256
