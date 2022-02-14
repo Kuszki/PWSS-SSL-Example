@@ -44,9 +44,9 @@ Wrapper::~Wrapper(void)
 	if (m_ctx && !m_shared) SSL_CTX_free(m_ctx); // Jeśli kontekst jest unikatowy - zwolnij go
 }
 
-bool Wrapper::init(const std::string& cert, const std::string& key, const std::string& ca)
+Wrapper::error Wrapper::init(const std::string& cert, const std::string& key, const std::string& ca)
 {
-	if (m_sock || m_ssl) return false; // Jeśli obiekt jest aktywny - zakończ
+	if (m_sock || m_ssl) return error::is_active_socket; // Jeśli obiekt jest aktywny - zakończ
 
 	if (m_ctx && !m_shared) SSL_CTX_free(m_ctx); // Jeśli kontekst jest unikatowy - zwolnij go
 
@@ -70,10 +70,10 @@ bool Wrapper::init(const std::string& cert, const std::string& key, const std::s
 		SSL_CTX_set_options(m_ctx, SSL_OP_NO_SSLv2); // Wyłącz starą wersję SSL
 	}
 
-	return ok; // Zwróć powodzenie operacji
+	return ok ? error::no_error : error::create_context_fail; // Zwróć powodzenie operacji
 }
 
-bool Wrapper::init(SSL_CTX* ctx)
+Wrapper::error Wrapper::init(SSL_CTX* ctx)
 {
 	// Jeśli kontekst jest unikatowy - zwolnij go
 	if (m_ctx && !m_shared) SSL_CTX_free(m_ctx);
@@ -81,12 +81,12 @@ bool Wrapper::init(SSL_CTX* ctx)
 	m_shared = true; // Ustal flagę współdzielenia
 	m_ctx = ctx; // Przypisz współdzielony kontekst
 
-	return true; // Zwróć powodzenie operacji
+	return error::no_error; // Zwróć powodzenie operacji
 }
 
-bool Wrapper::close(void)
+Wrapper::error Wrapper::close(void)
 {
-	if (!m_sock) return false; // Jesli obiekt nieaktywny - zakończ
+	if (!m_sock) return error::is_active_socket; // Jesli obiekt nieaktywny - zakończ
 
 	if (m_ssl) // Jeśli połączenie jest zaszyfrowane
 	{
@@ -99,7 +99,7 @@ bool Wrapper::close(void)
 	m_ssl = nullptr; // Zeruj wskaźnik na obiekt SSL
 	m_sock = 0; // Zeruj deskryptor gniazda
 
-	return true; // Zwróć powodzenie operacji
+	return error::no_error; // Zwróć powodzenie operacji
 }
 
 int Wrapper::sock(void) const
@@ -139,4 +139,9 @@ std::string Wrapper::name(void) const
 		return std::move(peer); // Zwróć nazwę partnera
 	}
 	else return std::string(); // Zwróć pustą nazwę gdy błąd
+}
+
+bool Wrapper::is_ok(Wrapper::error err)
+{
+	return err == error::no_error;
 }

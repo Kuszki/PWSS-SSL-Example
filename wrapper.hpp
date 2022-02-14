@@ -64,17 +64,44 @@ class Wrapper
 
 	public:
 
+		enum class error : int
+		{
+			no_error = 0,
+
+			no_active_socket,
+			is_active_socket,
+
+			create_context_fail,
+			create_socket_fail,
+			create_sslobj_fail,
+
+			pton_call_error,
+			sockopt_call_error,
+			bind_call_error,
+			listen_call_error,
+			poll_call_error,
+			accept_call_error,
+			sslwrap_call_error,
+			addrinfo_call_error,
+
+			send_call_error,
+			recv_call_error,
+
+			no_client_found,
+			no_server_found
+		};
+
 		virtual ~Wrapper(void); //!< Destruktor.
 
 		//! Inicjalizacja kontekstu SSL nowym kontekstem.
-		bool init(const std::string& cert, /*!< [out] Ścieżka pliku z certyfikatem. */
-		          const std::string& key, /*!< [out] Ścieżka pliku z kluczem prywatnym. */
-		          const std::string& ca /*!< [out] Ścieżka pliku z certyfikatem głównym. */);
+		error init(const std::string& cert, /*!< [out] Ścieżka pliku z certyfikatem. */
+		           const std::string& key, /*!< [out] Ścieżka pliku z kluczem prywatnym. */
+		           const std::string& ca /*!< [out] Ścieżka pliku z certyfikatem głównym. */);
 
 		//! Inicjalizacja kontekstu SSL kontekstem współdzielonym.
-		bool init(SSL_CTX* ctx /*!< Kontekst SSL. */);
+		error init(SSL_CTX* ctx /*!< Kontekst SSL. */);
 
-		bool close(void); //!< Zamkniecie gniazda.
+		error close(void); //!< Zamkniecie gniazda.
 
 		int sock(void) const; //!< Pobranie identyfikatora gniazda.
 
@@ -82,6 +109,8 @@ class Wrapper
 
 		Wrapper& operator= (const Wrapper&) = delete; //!< Operator przypisania (usuniety).
 		Wrapper& operator= (Wrapper&&) = delete; //!< Operator przeniesienia (usuniety).
+
+		static bool is_ok(Wrapper::error err);
 
 };
 

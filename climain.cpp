@@ -35,12 +35,12 @@ int main(int argc, char* argv[])
 	if (!parser(argc, argv, host, port, cert, key, ca)) return 0;
 	else client = new Client(); // W przeciwnym wypadku utwórz instancje klienta
 
-	if (!client->init(cert, key, ca)) // Inicjuj kontekst SSL
+	if (!Client::is_ok(client->init(cert, key, ca))) // Inicjuj kontekst SSL
 	{
 		std::cerr << "Unable to init SSL context" << std::endl; return -1;
 	}
 
-	if (!client->open(host, port)) // Nawiąż połączenie z serwerem
+	if (!Client::is_ok(client->open(host, port))) // Nawiąż połączenie z serwerem
 	{
 		std::cerr << "Unable to open connection" << std::endl; return -1;
 	}
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 	{
 		if (list[0].revents & POLLIN) // Sprawdź, czy można odczytać z serwera
 		{
-			if (!client->recv(buff)) return -1; // W przypadku niepowodzenia zakończ program
+			if (!Client::is_ok(client->recv(buff))) return -1; // W przypadku niepowodzenia zakończ program
 			else { std::cout << buff; buff.clear(); } // Wyświetl dane i wyczyść bufor
 		}
 
@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
 		{
 			std::getline(std::cin, buff); // Pobierz dane z terminala
 
-			if (!client->send(buff)) return -2; // Zakończ, jeśli nie udało się wysłać
+			if (!Client::is_ok(client->send(buff))) return -2; // Zakończ, jeśli nie udało się wysłać
 			else buff.clear(); // W przeciwnym razie wyczyść bufor (do ponownego użycia)
 		}
 	}

@@ -27,7 +27,7 @@ Server::Server(void)
 
 Server::~Server(void) {} // Destruktor dla zachowania porządku
 
-bool Server::start(const std::string& host,
+Wrapper::error Server::start(const std::string& host,
                    const uint16_t port,
                    const int queue)
 {
@@ -38,8 +38,9 @@ bool Server::start(const std::string& host,
 	int sock = ::socket(PF_INET, SOCK_STREAM, 0);
 
 	// W przypadku błędu - zakończ metodę
-	if (sock == -1) return false;
+	if (sock == -1) return error::create_socket_fail;
 
+	error last_err = error::no_error; // Ostatni błąd
 	sockaddr_in sin; // Struktura opisująca adres
 	bool ok = true; // Informacja o powodzeniu operacji
 
@@ -49,59 +50,73 @@ bool Server::start(const std::string& host,
 	sin.sin_family = AF_INET;
 
 	// Konwertuj adres z łańcucha do liczby
-	ok = ok && (::inet_pton(AF_INET, host.c_str(), &(sin.sin_addr)) == 1);
+	if (ok)
+	{
+		ok = ::inet_pton(AF_INET, host.c_str(), &(sin.sin_addr)) == 1;
+		if (!ok) last_err = error::pton_call_error;
+	}
 
 	// Ustaw opcję ponownego użycia adresu
-	ok = ok && (::setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == 0);
+	if (ok)
+	{
+		ok = ::setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == 0;
+		if (!ok) last_err = error::sockopt_call_error;
+	}
 
-	// Połącz gniazdo z adresem
-	ok = ok && (::bind(sock, (sockaddr*) &sin, sizeof(sin)) == 0);
+	if (ok)
+	{
+		ok = ::bind(sock, (sockaddr*) &sin, sizeof(sin)) == 0;
+		if (!ok) last_err = error::bind_call_error;
+	}
 
-	// Rozpocznij nasłuchiwanie
-	ok = ok && (::listen(sock, queue) == 0);
+	if (ok)
+	{
+		ok = ::listen(sock, queue) == 0;
+		if (!ok) last_err = error::listen_call_error;
+	}
 
 	// Zapisz deskryptor gniazda jeśli wszystko jest OK
-	if (!ok) { ::close(sock); return false; }
-	else m_sockets.push_back({ sock, POLLIN, 0 });
+	if (!ok) { ::close(sock); return last_err; }
+	else m_sockets.push_back({ m_sock = sock, POLLIN, 0 });
 
-	return m_sock = sock; // Zwróć powodzenie operacji
+	return error::no_error; // Zwróć powodzenie operacji
 }
 
-bool Server::send(const int sock,
+Wrapper::error Server::send(const int sock,
                   const std::vector<char>& data)
 {
 	// Jesli klient istnieje - wyślij dane
-	if (!m_clients.contains(sock)) return false;
+	if (!m_clients.contains(sock)) return error::no_client_found;
 	else return m_clients[sock].send(data);
 }
 
-bool Server::send(const int sock, const std::string& data)
+Wrapper::error Server::send(const int sock, const std::string& data)
 {
 	// Jesli klient istnieje - wyślij dane
-	if (!m_clients.contains(sock)) return false;
+	if (!m_clients.contains(sock)) return error::no_client_found;
 	else return m_clients[sock].send(data);
 }
 
-bool Server::recv(const int sock,
+Wrapper::error Server::recv(const int sock,
                   std::vector<char>& data,
                   size_t size)
 {
 	// Jesli klient istnieje - odbierz dane
-	if (!m_clients.contains(sock)) return false;
+	if (!m_clients.contains(sock)) return error::no_client_found;
 	else return m_clients[sock].recv(data, size);
 }
 
-bool Server::recv(const int sock, std::string& data, size_t size)
+Wrapper::error Server::recv(const int sock, std::string& data, size_t size)
 {
 	// Jesli klient istnieje - odbierz dane
-	if (!m_clients.contains(sock)) return false;
+	if (!m_clients.contains(sock)) return error::no_client_found;
 	else return m_clients[sock].recv(data, size);
 }
 
-bool Server::close(int sock)
+Wrapper::error Server::close(int sock)
 {
 	// Jesli klient nie istnieje - zakończ
-	if (!m_clients.contains(sock)) return false;
+	if (!m_clients.contains(sock)) return error::no_client_found;
 
 	auto st = m_sockets.begin() + 1; // Początek klientów
 	auto end = m_sockets.end(); // Koniec kontenera
@@ -116,10 +131,10 @@ bool Server::close(int sock)
 	m_clients.erase(sock); // Usuń obiekt klienta
 	m_sockets.erase(it); // Usuń gniazdo z listy
 
-	return true; // Poinformuj o sukcesie
+	return error::no_error; // Poinformuj o sukcesie
 }
 
-bool Server::loop(std::set<int>& read,
+Wrapper::error Server::loop(std::set<int>& read,
                   std::set<int>& write,
                   std::set<int>& open,
                   const time_t timeout)
@@ -127,14 +142,14 @@ bool Server::loop(std::set<int>& read,
 	// Sprawdź wszystkie gniazda pod kątem ich obsługi
 	int count = poll(m_sockets.data(), m_sockets.size(), timeout);
 
-	if (count < 0) return false; // Gdy błąd - zakończ
+	if (count < 0) return error::poll_call_error; // Gdy błąd - zakończ
 	else if (count > 0) // W przeciwnym razie obsługuj połaczenia
 	{
 		// Jesli jest nowe połaczenie do serwera
 		if (m_sockets.front().revents & POLLIN)
 		{
 			// Jesli uda się wynegocjować połączenie - dodaj do nowych połaczeń
-			if (accept()) open.insert(m_sockets.back().fd);
+			if (accept() == error::no_error) open.insert(m_sockets.back().fd);
 		}
 
 		// Obsłuż wszystkie gniazda klientów
@@ -156,10 +171,10 @@ bool Server::loop(std::set<int>& read,
 		}
 	}
 
-	return true; // Zwróć powodzenie
+	return error::no_error; // Zwróć powodzenie
 }
 
-bool Server::flag(int sock, short flags, bool mode)
+Wrapper::error Server::flag(int sock, short flags, bool mode)
 {
 	auto st = m_sockets.begin() + 1; // Początek klientów
 	auto end = m_sockets.end(); // Koniec kontenera
@@ -172,13 +187,13 @@ bool Server::flag(int sock, short flags, bool mode)
 	});
 
 	// Gdy nie znaleziono - zwróć błąd
-	if (it == end) return false;
+	if (it == end) return error::no_client_found;
 
 	// Modyfikuj wybrane flagi zgodnie z trybem
 	if (mode) it->events |= flags;
 	else it->events &= ~flags;
 
-	return true; // Zwróć powodzenie
+	return error::no_error; // Zwróć powodzenie
 }
 
 std::string Server::name(int sock) const
@@ -188,9 +203,9 @@ std::string Server::name(int sock) const
 	else return m_clients.at(sock).name();
 }
 
-bool Server::accept(void)
+Wrapper::error Server::accept(void)
 {
-	if (!m_sock) return false; // Jeśli serwer nie jest aktywny - zwróć błąd
+	if (!m_sock) return error::no_active_socket; // Jeśli serwer nie jest aktywny - zwróć błąd
 
 	sockaddr_in sin; // Struktora pomocnicza na adres
 	socklen_t size = sizeof(sin); // Długość adresu
@@ -200,10 +215,18 @@ bool Server::accept(void)
 	SSL* ssl = nullptr; // Obiekt SSL
 
 	// Jeśli nie udało sie zaakceptować połaczenia - zakończ
-	if (sock == -1) return false;
+	if (sock == -1) return error::accept_call_error;
 	else if (m_ctx) // Jeśli utworzono kontekst SSL
 	{
 		ssl = SSL_new(m_ctx); // Utwórz obiekt SSL
+
+		// Jesli nie udało się utweorzyć obiektu SSL
+		if (ssl == nullptr)
+		{
+			::close(sock); // Zamknij wadliwe połączenie
+
+			return error::create_sslobj_fail; // Zwróć informację o błędzie
+		}
 
 		// Spróbuj nawiązać bezpiecznie połączenie z klientem
 		if (SSL_set_fd(ssl, sock) != 1 || // Powiąż gniazdo z obiektem SSL
@@ -212,7 +235,7 @@ bool Server::accept(void)
 			SSL_free(ssl); // Zwolnij obiekt jeśli się nie udało
 			::close(sock); // Zamknij wadliwe połączenie
 
-			return false; // Zwróć informację o błędzie
+			return error::sslwrap_call_error; // Zwróć informację o błędzie
 		}
 	}
 
@@ -222,7 +245,7 @@ bool Server::accept(void)
 	                  std::forward_as_tuple(sock),
 	                  std::forward_as_tuple(m_ctx, ssl, sock));
 
-	return true; // Zwróc informacje o powodzeniu
+	return error::no_error; // Zwróc informacje o powodzeniu
 }
 
 std::set<int> Server::list(void) const

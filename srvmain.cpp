@@ -38,18 +38,18 @@ int main(int argc, char* argv[])
 	if (!parser(argc, argv, host, port, cert, key, ca)) return 0;
 	else server = new Server(); // W przeciwnym razie utworzenie instancji serwera
 
-	if (!server->init(cert, key, ca)) // Inicjuj kontekst SSL
+	if (!Server::is_ok(server->init(cert, key, ca))) // Inicjuj kontekst SSL
 	{
 		std::cerr << "Unable to init SSL context" << std::endl; return -1;
 	}
 
-	if (!server->start(host, port)) // Uruchom serwer
+	if (!Server::is_ok(server->start(host, port))) // Uruchom serwer
 	{
 		std::cerr << "Unable to start server" << std::endl; return -1;
 	}
 
 	// Pętla będzie wykonywana az do błędu `poll` lub odebrania sygnału zakończenia
-	while (server->loop(read, write, open)) // Sprawdź gotowość klientów
+	while (Server::is_ok(server->loop(read, write, open)))
 	{
 		const auto list = server->list(); // Pobierz listę klientów
 		const auto time = timestr(); // Pobierz aktualny czas
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 			const std::string name = server->name(i);
 
 			// Jeśli pobrano nowe dane, dodaj komunikat do kolekji klientów
-			if (server->recv(i, buff)) for (const auto& k : list)
+			if (Server::is_ok(server->recv(i, buff))) for (const auto& k : list)
 			{
 				if (k != i) // Pomiń bieżącego klienta
 				{
@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
 
 		for (const auto& i : write) if (queue.contains(i)) // Wyślij dane do klientów
 		{
-			if (server->send(i, queue[i])) // Jeśli udało się wysłać dane
+			if (Server::is_ok(server->send(i, queue[i]))) // Jeśli udało się wysłać dane
 			{
 				server->flag(i, POLLOUT, false); // Nie monitoruj możliwości zapisu
 				queue.erase(i); // Usuń kolejkę zapisu klienta (dane są wysłane)

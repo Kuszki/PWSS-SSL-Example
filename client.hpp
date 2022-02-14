@@ -40,22 +40,22 @@ class Client : public Wrapper
 		virtual ~Client(void); //!< Destruktor.
 
 		//! Nawiązanie połączenia z wybranym serwerem.
-		bool open(const std::string& host = "localhost" /*!< [in] Nazwa hosta. */,
-		          const uint16_t port = 8080 /*!< [in] Numer portu. */);
+		error open(const std::string& host = "localhost" /*!< [in] Nazwa hosta. */,
+		           const uint16_t port = 8080 /*!< [in] Numer portu. */);
 
 		//! Wysłanie wektora danych.
-		bool send(const std::vector<char>& data /*!< [in] Dane do wysłania. */);
+		error send(const std::vector<char>& data /*!< [in] Dane do wysłania. */);
 
 		//! Wysłanie napisu.
-		bool send(const std::string& data /*!< [in] Dane do wysłania. */);
+		error send(const std::string& data /*!< [in] Dane do wysłania. */);
 
 		//! Pobranie wektora danych.
-		bool recv(std::vector<char>& data, /*!< [out] Bufor na dane. */
-		          size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
+		error recv(std::vector<char>& data, /*!< [out] Bufor na dane. */
+		           size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
 
 		//! Pobranie napisu.
-		bool recv(std::string& data, /*!< [out] Bufor na dane. */
-		          size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
+		error recv(std::string& data, /*!< [out] Bufor na dane. */
+		           size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
 
 };
 

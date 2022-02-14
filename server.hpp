@@ -41,38 +41,38 @@ class Server : public Wrapper
 		virtual ~Server(void);  //!< Destruktor.
 
 		//! Uruchomienie serwera.
-		bool start(const std::string& host = "127.0.0.1", /*!< [in] Adres nasłuchiwania. */
-		           const uint16_t port = 8080, /*!< [in] Numer portu. */
-		           const int queue = 10 /*!< [in] Gługość kolejki. */);
+		error start(const std::string& host = "127.0.0.1", /*!< [in] Adres nasłuchiwania. */
+		            const uint16_t port = 8080, /*!< [in] Numer portu. */
+		            const int queue = 10 /*!< [in] Gługość kolejki. */);
 
 		//! Wysłanie wektora danych do klienta.
-		bool send(const int sock, /*!< [in] Identyfikator klienta. */
-		          const std::vector<char>& data /*!< [in] Dane do wysłania. */);
+		error send(const int sock, /*!< [in] Identyfikator klienta. */
+		           const std::vector<char>& data /*!< [in] Dane do wysłania. */);
 
 		//! Wysłanie napisu do klienta.
-		bool send(const int sock, /*!< [in] Identyfikator klienta. */
-		          const std::string& data /*!< [in] Dane do wysłania. */);
+		error send(const int sock, /*!< [in] Identyfikator klienta. */
+		           const std::string& data /*!< [in] Dane do wysłania. */);
 
-		bool recv(const int sock, /*!< [in] Identyfikator klienta. */
-		          std::vector<char>& data, /*!< [out] Bufor na dane. */
-		          size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
+		error recv(const int sock, /*!< [in] Identyfikator klienta. */
+		           std::vector<char>& data, /*!< [out] Bufor na dane. */
+		           size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
 
-		bool recv(const int sock, /*!< [in] Identyfikator klienta. */
-		          std::string& data, /*!< [out] Bufor na dane. */
-		          size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
+		error recv(const int sock, /*!< [in] Identyfikator klienta. */
+		           std::string& data, /*!< [out] Bufor na dane. */
+		           size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
 
-		bool close(int sock /*!< [in] Identyfikator klienta. */);
+		error close(int sock /*!< [in] Identyfikator klienta. */);
 
-		bool accept(void); //!< Akceptacja nowego połaczenia.
+		error accept(void); //!< Akceptacja nowego połaczenia.
 
-		bool loop(std::set<int>& read, /*!< [out] Zbiór klientów gotowych do odczytu. */
-		          std::set<int>& write, /*!< [out] Zbiór klientów gotowych do zapisu. */
-		          std::set<int>& open, /*!< [out] Zbiór nowo podłączonych klientów. */
-		          const time_t timeout = -1 /*!< [in] Maksymalny czas oczekiwania. */);
+		error loop(std::set<int>& read, /*!< [out] Zbiór klientów gotowych do odczytu. */
+		           std::set<int>& write, /*!< [out] Zbiór klientów gotowych do zapisu. */
+		           std::set<int>& open, /*!< [out] Zbiór nowo podłączonych klientów. */
+		           const time_t timeout = -1 /*!< [in] Maksymalny czas oczekiwania. */);
 
-		bool flag(int sock, /*!< [in] Identyfikator klienta. */
-		          short flags, /*!< [in] Flagi do modyfikacji. */
-		          bool mode /*!< [in] Operacja na flagach. */);
+		error flag(int sock, /*!< [in] Identyfikator klienta. */
+		           short flags, /*!< [in] Flagi do modyfikacji. */
+		           bool mode /*!< [in] Operacja na flagach. */);
 
 		std::string name(int sock /*!< [in] Identyfikator klienta. */) const;
 
