@@ -5,6 +5,8 @@ project(PWSS-SSL-Example LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(Git)
+
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 link_directories(${OPENSSL_LIBRARY_DIR})
@@ -12,8 +14,6 @@ link_directories(${OPENSSL_LIBRARY_DIR})
 find_package(Boost COMPONENTS program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
-
-find_package(Git REQUIRED)
 
 execute_process(COMMAND
 	${GIT_EXECUTABLE} rev-parse HEAD
