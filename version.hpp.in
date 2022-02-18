@@ -18,27 +18,10 @@
  *                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef OPTIONS_HPP
-#define OPTIONS_HPP
+#ifndef VERSION_HPP_IN
+#define VERSION_HPP_IN
 
-#include <boost/program_options.hpp>
+#define GIT_HASH_LONG "${GIT_HASH_LONG}"
+#define GIT_HASH_SHORT "${GIT_HASH_SHORT}"
 
-#include <iostream>
-#include <fstream>
-#include <string>
-
-#include "wrapper.hpp"
-
-//! Przerwarzanie argumentów programu.
-bool parser(int argc, /*!< [in] Liczba argumentów. */
-            char* argv[], /*!< [in] Lista argumentów. */
-            std::string& host, /*!< [out] Nazwa hosta. */
-            uint16_t& port, /*!< [out] Numer portu. */
-            std::string& cert, /*!< [out] Ścieżka pliku z certyfikatem. */
-            std::string& key, /*!< [out] Ścieżka pliku z kluczem prywatnym. */
-            std::string& ca /*!< [out] Ścieżka pliku z certyfikatem głównym. */);
-
-//! Pobranie aktualnego czasu w formacie tekstowym.
-std::string timestr(void);
-
-#endif // OPTIONS_HPP
+#endif // VERSION_HPP_IN

@@ -145,3 +145,9 @@ bool Wrapper::is_ok(Wrapper::error err)
 {
 	return err == error::no_error;
 }
+
+std::string Wrapper::version(bool sh)
+{
+	if (sh) return GIT_HASH_SHORT;
+	else return GIT_HASH_LONG;
+}

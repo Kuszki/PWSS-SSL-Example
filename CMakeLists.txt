@@ -13,6 +13,22 @@ find_package(Boost COMPONENTS program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
+find_package(Git REQUIRED)
+
+execute_process(COMMAND
+	"${GIT_EXECUTABLE}" rev-parse HEAD
+	WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+	OUTPUT_VARIABLE GIT_HASH_LONG
+	ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+execute_process(COMMAND
+	"${GIT_EXECUTABLE}" rev-parse --short HEAD
+	WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+	OUTPUT_VARIABLE GIT_HASH_SHORT
+	ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+configure_file(version.hpp.in ${PROJECT_BINARY_DIR}/version.hpp)
+
 add_library(SSL_wrapper SHARED
 	wrapper.hpp wrapper.cpp
 	server.hpp server.cpp
@@ -22,6 +38,7 @@ list(APPEND LIB_LIST SSL_wrapper
 	${OPENSSL_LIBRARIES}
 	${Boost_LIBRARIES})
 
+target_include_directories(SSL_wrapper PUBLIC ${CMAKE_BINARY_DIR})
 target_compile_definitions(SSL_wrapper PUBLIC SSL_wrapper)
 
 add_executable(SSL_serwer

@@ -42,6 +42,8 @@
 #include <map>
 #include <set>
 
+#include "version.hpp"
+
 //! Klasa owijajaca gniazdo SSL.
 class Wrapper
 {
@@ -110,7 +112,8 @@ class Wrapper
 		Wrapper& operator= (const Wrapper&) = delete; //!< Operator przypisania (usuniety).
 		Wrapper& operator= (Wrapper&&) = delete; //!< Operator przeniesienia (usuniety).
 
-		static bool is_ok(Wrapper::error err /*!< Kod błędu. */); //!< Sprawdzenie, czy nie wystąpił błąd.
+		static bool is_ok(Wrapper::error err /*!< [in] Kod błędu. */); //!< Sprawdzenie, czy nie wystąpił błąd.
+		static std::string version(bool sh = true /*!< [in] Format */); //!< Pobranie numeru wersji.
 
 };
 

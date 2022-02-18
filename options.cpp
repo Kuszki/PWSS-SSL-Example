@@ -44,13 +44,17 @@ bool parser(int argc, char* argv[],
 
 		          ("config", value<std::string>()->required(), "Use config form selected file")
 
+		          ("version,v", "Display program version")
 		          ("help,h", "Display help message");
 
 		// Przetworzenie opcji programu i zapis w kontenerze
 		store(parse_command_line(argc, argv, desc), vm);
 
+		// Jeśli wybrano "--version lub -v" - wyświetlenie wersji i zakończenie funkcji
+		if (vm.count("version")) { std::cout << Wrapper::version() << std::endl; return false; }
+
 		// Jeśli wybrano "--help lub -h" - wyświetlenie pomocy i zakończenie funkcji
-		if (vm.count("help")) { std::cout << desc << std::endl; return false; }
+		else if (vm.count("help")) { std::cout << desc << std::endl; return false; }
 
 		// Jeśli wybrano opcję wczytania ustawień s pliku - wczytanie ich z pliku
 		else if (vm.count("config"))
