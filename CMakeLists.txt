@@ -5,6 +5,8 @@ project(PWSS-SSL-Example LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(GEN_INC ${PROJECT_BINARY_DIR}/include)
+
 find_package(Git)
 
 find_package(OpenSSL REQUIRED)
@@ -27,10 +29,10 @@ execute_process(COMMAND
 	OUTPUT_VARIABLE GIT_HASH_SHORT
 	ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-configure_file(version.hpp.in ${PROJECT_BINARY_DIR}/version.hpp)
+configure_file(version.hpp.in ${GEN_INC}/version.hpp)
 
 add_library(SSL_wrapper SHARED
-	${PROJECT_BINARY_DIR}/version.hpp
+	${GEN_INC}/version.hpp
 	wrapper.hpp wrapper.cpp
 	server.hpp server.cpp
 	client.hpp client.cpp)
@@ -39,7 +41,7 @@ list(APPEND LIB_LIST SSL_wrapper
 	${OPENSSL_LIBRARIES}
 	${Boost_LIBRARIES})
 
-target_include_directories(SSL_wrapper PUBLIC ${CMAKE_BINARY_DIR})
+target_include_directories(SSL_wrapper PUBLIC ${GEN_INC}/include)
 target_compile_definitions(SSL_wrapper PUBLIC SSL_wrapper)
 
 add_executable(SSL_serwer
