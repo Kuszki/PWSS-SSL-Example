@@ -41,7 +41,7 @@ list(APPEND LIB_LIST SSL_wrapper
 	${OPENSSL_LIBRARIES}
 	${Boost_LIBRARIES})
 
-target_include_directories(SSL_wrapper PUBLIC ${GEN_INC}/include)
+target_include_directories(SSL_wrapper PUBLIC ${GEN_INC})
 target_compile_definitions(SSL_wrapper PUBLIC SSL_wrapper)
 
 add_executable(SSL_serwer
