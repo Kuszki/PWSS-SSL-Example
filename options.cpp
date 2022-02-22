@@ -42,7 +42,7 @@ bool parser(int argc, char* argv[],
 		          ("key", value<>(&key)->required(), "Private key file")
 		          ("ca", value<>(&ca)->required(), "CA root certyficate file")
 
-		          ("config", value<std::string>()->required(), "Use config form selected file")
+		          ("config", value<std::string>(), "Use config form selected file")
 
 		          ("version,v", "Display program version")
 		          ("help,h", "Display help message");
