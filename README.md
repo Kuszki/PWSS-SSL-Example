@@ -28,7 +28,8 @@ Klient umożliwia nawiązanie połączenia z wybranym serwerem. Jeśli klient zo
 Implementacja wykorzystania klasy klienta, zawarta w pliku `climain.cpp`, wykorzystuje jeden wątek. Nieblokujaca obsługa przychodzących danych z serwera oraz wejścia terminala została zrealizowana za pomocą funkcji "poll". Po przechwyceniu sygnału z systemu operacyjnego metoda "loop" kończy pracę zwracając błąd - oznacza to, że należy zakończyć program. Destruktor serwera zamknie wszystkie połączenia i zwolni związane z nimi zasoby.
 
 ## Generowanie certyfikatów
-W celu wygenerowania certyfikatów dla serwera i klientów należy:
+
+### Przy użyciu `openssl`
 
 1) Utworzyć klucz prywatny certyfikatu głównego:
 > openssl genrsa -out rootCA.key 4096
@@ -51,3 +52,25 @@ Kroki 3, 4, 5 należy powtarzać w celu utworzenia kolejnych certyfiaktów (dla 
 > openssl req -new -sha256 -key client.key -out client.csr
 >
 > openssl x509 -req -in client.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out client.crt -sha256
+
+### Przy użyciu `easy-rsa`
+
+1) Zainicjować folder pki:
+> easy-rsa init-pki
+
+2) Utworzyć certyfikat główny:
+> easy-rsa build-ca nopass
+
+3) Utworzyć certyfikat serwera:
+> easy-rsa build-server-full nazwa nopass
+
+4) Utworzyć certyfikat dla klienta:
+> easy-rsa build-client-full nazwa nopass
+
+### Informacje o `easy-rsa`
+
+W pliku `vars` znajduje się konfiguracja generowanych certyfikatów, a jej wartości domyślne zależą od opiekuna pakietu `easy-rsa`. Generowane certyfikaty serwera i klientów są automatycznie podpisywane certyfikatem głównym. Wszystkie wystawione certyfikaty znajdują się w katalogu `issued`, a powiązane z nimi klucze prywatne w katalogu `private`.
+
+Parametr `nazwa` oznacza nazwę podmiotu, dla którego wystawiany jest certyfikat (pole `CN - Common Name`). Zwykle jest to imię i nazwisko. Parametr `nopass` jest opcjonalny i oznacza, że certyfikat nie będzie zabezpieczony hasłem (przydatne, gdy zostaje on wczytany przez program np. serwer).
+
+W niektórych dystrubycjach (np. `Debian` krok pierwszy musi być poprzedzony utworzeniem odpowiedniej struktury katalogów: `make-cadir katalog && cd katalog`. Dodatkowo program `easy-rsa` może nazywać się `easyrsa` i może nie występować w `$PATH` - wtedy wywołanie `make-cadir` w utworzonym folderze umieści dowiązanie symboliczne do właściwego programu.
