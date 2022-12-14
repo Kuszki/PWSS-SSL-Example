@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  {description}                                                          *
+ *  Open SSL chat example                                                  *
  *  Copyright (C) 2022  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
@@ -85,14 +85,14 @@ Wrapper::error Server::start(const std::string& host,
 Wrapper::error Server::send(const int sock,
                   const std::vector<char>& data)
 {
-	// Jesli klient istnieje - wyślij dane
+	// Jeśli klient istnieje - wyślij dane
 	if (!m_clients.contains(sock)) return error::no_client_found;
 	else return m_clients[sock].send(data);
 }
 
 Wrapper::error Server::send(const int sock, const std::string& data)
 {
-	// Jesli klient istnieje - wyślij dane
+	// Jeśli klient istnieje - wyślij dane
 	if (!m_clients.contains(sock)) return error::no_client_found;
 	else return m_clients[sock].send(data);
 }
@@ -101,21 +101,21 @@ Wrapper::error Server::recv(const int sock,
                   std::vector<char>& data,
                   size_t size)
 {
-	// Jesli klient istnieje - odbierz dane
+	// Jeśli klient istnieje - odbierz dane
 	if (!m_clients.contains(sock)) return error::no_client_found;
 	else return m_clients[sock].recv(data, size);
 }
 
 Wrapper::error Server::recv(const int sock, std::string& data, size_t size)
 {
-	// Jesli klient istnieje - odbierz dane
+	// Jeśli klient istnieje - odbierz dane
 	if (!m_clients.contains(sock)) return error::no_client_found;
 	else return m_clients[sock].recv(data, size);
 }
 
 Wrapper::error Server::close(int sock)
 {
-	// Jesli klient nie istnieje - zakończ
+	// Jeśli klient nie istnieje - zakończ
 	if (!m_clients.contains(sock)) return error::no_client_found;
 
 	auto st = m_sockets.begin() + 1; // Początek klientów
@@ -143,12 +143,12 @@ Wrapper::error Server::loop(std::set<int>& read,
 	int count = poll(m_sockets.data(), m_sockets.size(), timeout);
 
 	if (count < 0) return error::poll_call_error; // Gdy błąd - zakończ
-	else if (count > 0) // W przeciwnym razie obsługuj połaczenia
+	else if (count > 0) // W przeciwnym razie obsługuj połączenia
 	{
-		// Jesli jest nowe połaczenie do serwera
+		// Jeśli jest nowe połączenie do serwera
 		if (m_sockets.front().revents & POLLIN)
 		{
-			// Jesli uda się wynegocjować połączenie - dodaj do nowych połaczeń
+			// Jeśli uda się wynegocjować połączenie - dodaj do nowych połączeń
 			if (accept() == error::no_error) open.insert(m_sockets.back().fd);
 		}
 
@@ -198,7 +198,7 @@ Wrapper::error Server::flag(int sock, short flags, bool mode)
 
 std::string Server::name(int sock) const
 {
-	// Jesli klient istnieje - zwróć jego nazwę
+	// Jeśli klient istnieje - zwróć jego nazwę
 	if (!m_clients.contains(sock)) return std::string();
 	else return m_clients.at(sock).name();
 }
@@ -207,20 +207,20 @@ Wrapper::error Server::accept(void)
 {
 	if (!m_sock) return error::no_active_socket; // Jeśli serwer nie jest aktywny - zwróć błąd
 
-	sockaddr_in sin; // Struktora pomocnicza na adres
+	sockaddr_in sin; // Struktura pomocnicza na adres
 	socklen_t size = sizeof(sin); // Długość adresu
 
 	// Akceptuj nowe połączenie do serwera
 	int sock = ::accept(m_sock, (sockaddr*) &sin, &size);
 	SSL* ssl = nullptr; // Obiekt SSL
 
-	// Jeśli nie udało sie zaakceptować połaczenia - zakończ
+	// Jeśli nie udało się zaakceptować połączenia - zakończ
 	if (sock == -1) return error::accept_call_error;
 	else if (m_ctx) // Jeśli utworzono kontekst SSL
 	{
 		ssl = SSL_new(m_ctx); // Utwórz obiekt SSL
 
-		// Jesli nie udało się utweorzyć obiektu SSL
+		// Jeśli nie udało się utworzyć obiektu SSL
 		if (ssl == nullptr)
 		{
 			::close(sock); // Zamknij wadliwe połączenie
@@ -245,7 +245,7 @@ Wrapper::error Server::accept(void)
 	                  std::forward_as_tuple(sock),
 	                  std::forward_as_tuple(m_ctx, ssl, sock));
 
-	return error::no_error; // Zwróc informacje o powodzeniu
+	return error::no_error; // Zwróć informacje o powodzeniu
 }
 
 std::set<int> Server::list(void) const

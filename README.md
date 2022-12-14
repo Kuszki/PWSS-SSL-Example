@@ -1,7 +1,7 @@
 [![CMake build](https://github.com/Kuszki/PWSS-SSL-Example/actions/workflows/cmake.yml/badge.svg)](https://github.com/Kuszki/PWSS-SSL-Example/actions/workflows/cmake.yml)
 
 # PWSS-SSL-Example
-Przykładowy czat z wykorzystaniem SSL. Połaczeni klienci mają mozliwość wysyłania i odbioru wiadomości od wszystkich połączonych klientów.
+Przykładowy czat z wykorzystaniem SSL. Połączeni klienci mają możliwość wysyłania i odbioru wiadomości od wszystkich połączonych klientów.
 
 Połączenie z serwerem jest szyfrowane z wykorzystaniem `OpenSSL`. Zarówno klient, jak i serwer, wymagają zaufanego certyfikatu. Nazwy klientów wyświetlane są na podstawie nazwy zawartej w certyfikacie.
 
@@ -11,9 +11,9 @@ Projekt stanowi przykład w ramach przedmiotu `Programowanie w Środowisku Sieci
 
 ## Działanie serwera
 
-Serwer nasłuchuje połaczeń na wybranym interfejsie i porcie. Jeśli serwer zostanie zainicjalizowany z podaniem ścieżki do certyfikatu i klucza prywatnego będzie on wymagał szyfrowania połączeń przychodzących i będzie weryfikował certyfikaty klientów. W przypadku posiadania jedynie certyfikatu "self-signed" należy przekazać do serwera certyfikat CA, którym podpisano certyfikaty klientów.
+Serwer nasłuchuje połączeń na wybranym interfejsie i porcie. Jeśli serwer zostanie zainicjalizowany z podaniem ścieżki do certyfikatu i klucza prywatnego będzie on wymagał szyfrowania połączeń przychodzących i będzie weryfikował certyfikaty klientów. W przypadku posiadania jedynie certyfikatu "self-signed" należy przekazać do serwera certyfikat CA, którym podpisano certyfikaty klientów.
 
-Metoda "loop" serwera pozwala wykonać pętlę obsługi klientów - automatycznie akceptując nowe połaczenia. Metoda zwraca zbiory opisujace nowych klientów, klientów gotowych do odczytu i klientów gotowych do zapisu. Należy zamodzielnie zaimplementować obsługę klientów zgodnie z potrzebą - podobnie należy zaimplementować obsługę zamykania połączenia i ręcznie wywołać metodę "close" dla wybranego id klienta.
+Metoda "loop" serwera pozwala wykonać pętlę obsługi klientów - automatycznie akceptując nowe połączenia. Metoda zwraca zbiory opisujace nowych klientów, klientów gotowych do odczytu i klientów gotowych do zapisu. Należy samodzielnie zaimplementować obsługę klientów zgodnie z potrzebą - podobnie należy zaimplementować obsługę zamykania połączenia i ręcznie wywołać metodę "close" dla wybranego id klienta.
 
 Po przechwyceniu sygnału z systemu operacyjnego metoda "loop" kończy pracę zwracając błąd - oznacza to, że należy najprawdopodobniej zakończyć program. Destruktor serwera zamknie wszystkie połączenia i zwolni związane z nimi zasoby.
 
@@ -25,7 +25,7 @@ Przykładowa implementacja serwera z wykorzystaniem dostarczonej klasy jest umie
 
 Klient umożliwia nawiązanie połączenia z wybranym serwerem. Jeśli klient zostanie zainicjalizowany z podaniem ścieżki do certyfikatu i klucza prywatnego będzie on wymagał szyfrowania połączenia i będzie weryfikował certyfikat serwera. W przypadku posiadania jedynie certyfikatu "self-signed" należy przekazać do programu certyfikat CA, którym podpisano certyfikat serwera.
 
-Implementacja wykorzystania klasy klienta, zawarta w pliku `climain.cpp`, wykorzystuje jeden wątek. Nieblokujaca obsługa przychodzących danych z serwera oraz wejścia terminala została zrealizowana za pomocą funkcji "poll". Po przechwyceniu sygnału z systemu operacyjnego metoda "loop" kończy pracę zwracając błąd - oznacza to, że należy zakończyć program. Destruktor serwera zamknie wszystkie połączenia i zwolni związane z nimi zasoby.
+Implementacja wykorzystania klasy klienta, zawarta w pliku `climain.cpp`, wykorzystuje jeden wątek. Nieblokująca obsługa przychodzących danych z serwera oraz wejścia terminala została zrealizowana za pomocą funkcji "poll". Po przechwyceniu sygnału z systemu operacyjnego metoda "loop" kończy pracę zwracając błąd - oznacza to, że należy zakończyć program. Destruktor serwera zamknie wszystkie połączenia i zwolni związane z nimi zasoby.
 
 ## Generowanie certyfikatów
 

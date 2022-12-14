@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  {description}                                                          *
+ *  Open SSL chat example                                                  *
  *  Copyright (C) 2022  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
@@ -86,7 +86,7 @@ Wrapper::error Wrapper::init(SSL_CTX* ctx)
 
 Wrapper::error Wrapper::close(void)
 {
-	if (!m_sock) return error::is_active_socket; // Jesli obiekt nieaktywny - zakończ
+	if (!m_sock) return error::is_active_socket; // Jeśli obiekt nieaktywny - zakończ
 
 	if (m_ssl) // Jeśli połączenie jest zaszyfrowane
 	{
@@ -109,7 +109,7 @@ int Wrapper::sock(void) const
 
 std::string Wrapper::name(void) const
 {
-	if (!m_sock) return std::string(); // Jesli obiekt nieaktywny - zakończ
+	if (!m_sock) return std::string(); // Jeśli obiekt nieaktywny - zakończ
 
 	if (!m_ssl) // Jeśli połączenie nie jest zaszyfrowane
 	{
@@ -123,7 +123,7 @@ std::string Wrapper::name(void) const
 		return inet_ntoa(addr.sin_addr);
 	}
 
-	// Pobierz certyfikat od połaczonego partnera
+	// Pobierz certyfikat od połączonego partnera
 	X509 *cert = SSL_get_peer_certificate(m_ssl);
 
 	if (cert != nullptr) // Pobierz informacje o partnerze z certyfikatu

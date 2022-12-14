@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  {description}                                                          *
+ *  Open SSL chat example                                                  *
  *  Copyright (C) 2022  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
@@ -39,7 +39,7 @@ Client::~Client(void) {} // Destruktor dla zachowania porządku
 
 Wrapper::error Client::open(const std::string& host, const uint16_t port)
 {
-	if (m_sock) this->close(); // Zamknij poprzednie połaczenie, jeśli aktywne
+	if (m_sock) this->close(); // Zamknij poprzednie połączenie, jeśli aktywne
 
 	const std::string ports = std::to_string(port); // Konwertuj port na łańcuch
 	int sockfd(0); // Roboczy deskryptor gniazda
@@ -68,14 +68,14 @@ Wrapper::error Client::open(const std::string& host, const uint16_t port)
 			continue; // do kolejnego elementu
 		}
 
-		// Spróbuj nawiązać połaczenie
+		// Spróbuj nawiązać połączenie
 		if (::connect(sockfd,
 		              p->ai_addr,
 		              p->ai_addrlen) == -1)
 		{
 			::close(sockfd); // Gdy błąd - zamknij
 			sockfd = 0; // gniazdo po czym przejdź
-			continue; // dalej do kolejnego elemenut
+			continue; // dalej do kolejnego elementu
 		}
 		else break; // Gdy wszystko OK pomiń resztę elementów
 	}
@@ -85,7 +85,7 @@ Wrapper::error Client::open(const std::string& host, const uint16_t port)
 	if (sockfd == 0) return error::no_server_found; // Jeśli nie udało się połączyć - zakończ
 	else m_sock = sockfd; // W przeciwnym razie zapamiętaj deskryptor gniazda
 
-	// W przypadku, gdy nie ma kontekstu SSL, połaczenie nie będzie szyfrowane
+	// W przypadku, gdy nie ma kontekstu SSL, połączenie nie będzie szyfrowane
 	if (!m_ctx) return error::no_error; // Jeśli kontekst SSL nie istnieje - zakończ
 
 	SSL* ssl = SSL_new(m_ctx); // Utwórz obiekt SSL na podstawie kontekstu
@@ -104,7 +104,7 @@ Wrapper::error Client::open(const std::string& host, const uint16_t port)
 
 Wrapper::error Client::send(const std::vector<char>& data)
 {
-	if (!m_sock) return error::no_active_socket; // Jeśli połczenie nie jest aktywne - zwróć błąd
+	if (!m_sock) return error::no_active_socket; // Jeśli połączenie nie jest aktywne - zwróć błąd
 
 	const char* prt = data.data(); // Dane do wysłania
 	int size = data.size(); // Liczba bajtów do wysłania
@@ -112,7 +112,7 @@ Wrapper::error Client::send(const std::vector<char>& data)
 	// Jeśli połączenie jest zaszyfrowane - wyślij stosując szyfrowanie
 	if (m_ssl) size -= SSL_write(m_ssl, prt, size);
 
-	// W przypadku nieszyfrowanego połaczenia - użyj klasycznego send
+	// W przypadku nieszyfrowanego połączenia - użyj klasycznego send
 	else size -= ::send(m_sock, prt, size, 0);
 
 	return size == 0 ? error::no_error : error::send_call_error; // Jeśli wysłano wszystkie dane - zwróć powodzenie
@@ -120,7 +120,7 @@ Wrapper::error Client::send(const std::vector<char>& data)
 
 Wrapper::error Client::send(const std::string& data)
 {
-	if (!m_sock) return error::no_active_socket; // Jeśli połczenie nie jest aktywne - zwróć błąd
+	if (!m_sock) return error::no_active_socket; // Jeśli połączenie nie jest aktywne - zwróć błąd
 
 	const char* prt = data.data(); // Dane do wysłania
 	int size = data.size(); // Liczba bajtów do wysłania
@@ -128,7 +128,7 @@ Wrapper::error Client::send(const std::string& data)
 	// Jeśli połączenie jest zaszyfrowane - wyślij stosując szyfrowanie
 	if (m_ssl) size -= SSL_write(m_ssl, prt, size);
 
-	// W przypadku nieszyfrowanego połaczenia - użyj klasycznego send
+	// W przypadku nieszyfrowanego połączenia - użyj klasycznego send
 	else size -= ::send(m_sock, prt, size, 0);
 
 	return size == 0 ? error::no_error : error::send_call_error; // Jeśli wysłano wszystkie dane - zwróć powodzenie
@@ -136,7 +136,7 @@ Wrapper::error Client::send(const std::string& data)
 
 Wrapper::error Client::recv(std::vector<char>& data, size_t size)
 {
-	if (!m_sock) return error::no_active_socket; // Jeśli połczenie nie jest aktywne - zwróć błąd
+	if (!m_sock) return error::no_active_socket; // Jeśli połączenie nie jest aktywne - zwróć błąd
 
 	char buff[size]; // Bufor na dane
 	int num = 0; // Liczba odebranych bajtów
@@ -144,7 +144,7 @@ Wrapper::error Client::recv(std::vector<char>& data, size_t size)
 	// Jeśli połączenie jest zaszyfrowane - czytaj stosując szyfrowanie
 	if (m_ssl) num = SSL_read(m_ssl, buff, size);
 
-	// W przypadku nieszyfrowanego połaczenia - użyj klasycznego recv
+	// W przypadku nieszyfrowanego połączenia - użyj klasycznego recv
 	else num = ::recv(m_sock, buff, size, 0);
 
 	if (num <= 0) return error::recv_call_error; // W przypadku błędu - zakończ
@@ -158,7 +158,7 @@ Wrapper::error Client::recv(std::vector<char>& data, size_t size)
 
 Wrapper::error Client::recv(std::string& data, size_t size)
 {
-	if (!m_sock) return error::no_active_socket; // Jeśli połczenie nie jest aktywne - zwróć błąd
+	if (!m_sock) return error::no_active_socket; // Jeśli połączenie nie jest aktywne - zwróć błąd
 
 	char buff[size]; // Bufor na dane
 	int num = 0; // Liczba odebranych bajtów
@@ -166,7 +166,7 @@ Wrapper::error Client::recv(std::string& data, size_t size)
 	// Jeśli połączenie jest zaszyfrowane - czytaj stosując szyfrowanie
 	if (m_ssl) num = SSL_read(m_ssl, buff, size);
 
-	// W przypadku nieszyfrowanego połaczenia - użyj klasycznego recv
+	// W przypadku nieszyfrowanego połączenia - użyj klasycznego recv
 	else num = ::recv(m_sock, buff, size, 0);
 
 	if (num <= 0) return error::recv_call_error; // W przypadku błędu - zakończ

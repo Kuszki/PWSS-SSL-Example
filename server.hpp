@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  {description}                                                          *
+ *  Open SSL chat example                                                  *
  *  Copyright (C) 2022  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
@@ -24,7 +24,7 @@
 #include "wrapper.hpp"
 #include "client.hpp"
 
-//! Klasa reprezentujaca serwer.
+//! Klasa reprezentująca serwer.
 class Server : public Wrapper
 {
 
@@ -43,7 +43,7 @@ class Server : public Wrapper
 		//! Uruchomienie serwera.
 		error start(const std::string& host = "127.0.0.1", /*!< [in] Adres nasłuchiwania. */
 		            const uint16_t port = 8080, /*!< [in] Numer portu. */
-		            const int queue = 10 /*!< [in] Gługość kolejki. */);
+		            const int queue = 10 /*!< [in] Długość kolejki. */);
 
 		//! Wysłanie wektora danych do klienta.
 		error send(const int sock, /*!< [in] Identyfikator klienta. */
@@ -63,7 +63,7 @@ class Server : public Wrapper
 
 		error close(int sock /*!< [in] Identyfikator klienta. */);
 
-		error accept(void); //!< Akceptacja nowego połaczenia.
+		error accept(void); //!< Akceptacja nowego połączenia.
 
 		error loop(std::set<int>& read, /*!< [out] Zbiór klientów gotowych do odczytu. */
 		           std::set<int>& write, /*!< [out] Zbiór klientów gotowych do zapisu. */

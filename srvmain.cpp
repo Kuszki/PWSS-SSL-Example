@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  {description}                                                          *
+ *  Open SSL chat example                                                  *
  *  Copyright (C) 2022  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 		std::cerr << "Unable to start server" << std::endl; return -1;
 	}
 
-	// Pętla będzie wykonywana az do błędu `poll` lub odebrania sygnału zakończenia
+	// Pętla będzie wykonywana aż do błędu `poll` lub odebrania sygnału zakończenia
 	while (Server::is_ok(server->loop(read, write, open)))
 	{
 		const auto list = server->list(); // Pobierz listę klientów
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 			// Pobierz nazwę klienta na podstawie certyfikatu
 			const std::string name = server->name(i);
 
-			// Jeśli pobrano nowe dane, dodaj komunikat do kolekji klientów
+			// Jeśli pobrano nowe dane, dodaj komunikat do kolejki klientów
 			if (Server::is_ok(server->recv(i, buff))) for (const auto& k : list)
 			{
 				if (k != i) // Pomiń bieżącego klienta

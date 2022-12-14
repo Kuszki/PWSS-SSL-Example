@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                                                                         *
- *  {description}                                                          *
+ *  Open SSL chat example                                                  *
  *  Copyright (C) 2022  Łukasz "Kuszki" Dróżdż  lukasz.kuszki@gmail.com    *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
@@ -37,6 +37,7 @@
 #include <poll.h>
 #include <netdb.h>
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <map>
@@ -44,7 +45,7 @@
 
 #include "version.hpp"
 
-//! Klasa owijajaca gniazdo SSL.
+//! Klasa owijająca gniazdo SSL.
 class Wrapper
 {
 
@@ -75,15 +76,15 @@ class Wrapper
 
 			create_context_fail, //!< Błąd tworzenia kontekstu SSL.
 			create_socket_fail, //!< Błąd tworzenia gniazda.
-			create_sslobj_fail, //!< Bład tworzenia obiektu SSL.
+			create_sslobj_fail, //!< Błąd tworzenia obiektu SSL.
 
 			pton_call_error, //!< Błąd w wywołaniu pton.
 			sockopt_call_error, //!< Błąd w ustawianiu opcji gniazda.
-			bind_call_error, //!< Bład w wywołaniu bind.
-			listen_call_error, //!< Bład w wywołaniu listen.
+			bind_call_error, //!< Błąd w wywołaniu bind.
+			listen_call_error, //!< Błąd w wywołaniu listen.
 			poll_call_error, //!< Błąd w wywołaniu poll.
 			accept_call_error, //!< Błąd w wywołaniu accept.
-			sslwrap_call_error, //!< Błąd podczas owijania gniazdna.
+			sslwrap_call_error, //!< Błąd podczas owijania gniazda.
 			addrinfo_call_error, //!< Błąd podczas tłumaczenia adresu.
 
 			send_call_error, //!< Błąd podczas wywołania send.
@@ -109,8 +110,8 @@ class Wrapper
 
 		std::string name(void) const; //!< Pobranie nazwy hosta.
 
-		Wrapper& operator= (const Wrapper&) = delete; //!< Operator przypisania (usuniety).
-		Wrapper& operator= (Wrapper&&) = delete; //!< Operator przeniesienia (usuniety).
+		Wrapper& operator= (const Wrapper&) = delete; //!< Operator przypisania (usunięty).
+		Wrapper& operator= (Wrapper&&) = delete; //!< Operator przeniesienia (usunięty).
 
 		static bool is_ok(Wrapper::error err /*!< [in] Kod błędu. */); //!< Sprawdzenie, czy nie wystąpił błąd.
 		static std::string version(bool sh = true /*!< [in] Format */); //!< Pobranie numeru wersji.
