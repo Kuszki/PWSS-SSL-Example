@@ -32,40 +32,58 @@ Implementacja wykorzystania klasy klienta, zawarta w pliku `climain.cpp`, wykorz
 ### Przy użyciu `openssl`
 
 1) Utworzyć klucz prywatny certyfikatu głównego:
-> openssl genrsa -out rootCA.key 4096
+``` bash
+openssl genrsa -out rootCA.key 4096
+```
 
 2) Utworzyć certyfikat główny:
-> openssl req -x509 -new -nodes -key rootCA.key -sha256 -out rootCA.crt
+``` bash
+openssl req -x509 -new -nodes -key rootCA.key -sha256 -out rootCA.crt
+```
 
 3) Utworzyć klucz prywatny serwera:
-> openssl genrsa -out server.key 2048
+``` bash
+openssl genrsa -out server.key 2048
+```
 
 4) Utworzyć informacje o certyfikacie serwera:
-> openssl req -new -sha256 -key server.key -out server.csr
+``` bash
+openssl req -new -sha256 -key server.key -out server.csr
+```
 
 5) Utworzyć certyfikat serwera podpisany kluczem głównym:
-> openssl x509 -req -in server.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out server.crt -sha256
+``` bash
+openssl x509 -req -in server.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out server.crt -sha256
+```
 
 Kroki 3, 4, 5 należy powtarzać w celu utworzenia kolejnych certyfiaktów (dla klientów):
-> openssl genrsa -out client.key 2048
->
-> openssl req -new -sha256 -key client.key -out client.csr
->
-> openssl x509 -req -in client.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out client.crt -sha256
+``` bash
+openssl genrsa -out client.key 2048
+openssl req -new -sha256 -key client.key -out client.csr
+openssl x509 -req -in client.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out client.crt -sha256
+```
 
 ### Przy użyciu `easy-rsa`
 
 1) Zainicjować folder pki:
-> easy-rsa init-pki
+``` bash
+easy-rsa init-pki
+```
 
 2) Utworzyć certyfikat główny:
-> easy-rsa build-ca nopass
+``` bash
+easy-rsa build-ca nopass
+```
 
 3) Utworzyć certyfikat serwera:
-> easy-rsa build-server-full nazwa nopass
+``` bash
+easy-rsa build-server-full nazwa nopass
+```
 
 4) Utworzyć certyfikat dla klienta:
-> easy-rsa build-client-full nazwa nopass
+``` bash
+easy-rsa build-client-full nazwa nopass
+```
 
 ### Informacje o `easy-rsa`
 
@@ -78,33 +96,39 @@ W niektórych dystrubycjach (np. `Debian` krok pierwszy musi być poprzedzony ut
 ## Przykład uruchomienia programów
 
 Klonowanie, konfigurowanie i budowanie projektu w oddzielnym katalogu:
-> git clone https://github.com/Kuszki/PWSS-SSL-Example # klonuj
-> mkdir build-PWSS-SSL-Example # utwórz katalog budowania
-> cd build-PWSS-SSL-Example # przejdź do katalogu budowania
-> cmake ../PWSS-SSL-Example # konfiguruj projekt
-> cmake --build . # zbuduj dla wybranej konfiguracji
+``` bash
+git clone https://github.com/Kuszki/PWSS-SSL-Example    # klonuj repozytorium
+mkdir build-PWSS-SSL-Example                            # utwórz katalog budowania
+cd build-PWSS-SSL-Example                               # przejdź do katalogu budowania
+cmake ../PWSS-SSL-Example                               # konfiguruj projekt
+cmake --build .                                         # zbuduj dla wybranej konfiguracji
+```
 
 Tworzenie certyfikatów (przykład dla `Debiana`):
-> make-cadir cert # inicjuj katalog z certyfikatami
-> cd cert # przejdź do zainicjowanego katalogu
-> ./easyrsa init-pki # inicjuj strukturę pki
-> ./easyrsa build-ca nopass # zbuduj certyfikat CA
-> ./easyrsa build-server-full Serwer nopass # zbuduj certyfikat serwera
-> ./easyrsa build-client-full Cli_A nopass # zbuduj certyfikat klienta A
-> ./easyrsa build-client-full Cli_B nopass # zbuduj certyfikat klienta B
+``` bash
+make-cadir cert                              # inicjuj katalog z certyfikatami
+cd cert                                      # przejdź do zainicjowanego katalogu
+./easyrsa init-pki                           # inicjuj strukturę pki
+./easyrsa build-ca nopass                    # zbuduj certyfikat CA
+./easyrsa build-server-full Serwer nopass    # zbuduj certyfikat serwera
+./easyrsa build-client-full Cli_A nopass     # zbuduj certyfikat klienta A
+./easyrsa build-client-full Cli_B nopass     # zbuduj certyfikat klienta B
+```
 
 Uruchamianie programów (z katalogu `build-PWSS-SSL-Example`):
-> ./SSL_serwer \ # uruchom serwer
-> 	--ca=certs/pki/ca.crt \
-> 	--key=certs/pki/private/Serwer.key \
->	--cert=certs/pki/issued/Serwer.crt
->
-> ./SSL_klient \ # uruchom klienta
-> 	--ca=certs/pki/ca.crt \
-> 	--key=certs/pki/private/Cli_A.key \
->	--cert=certs/pki/issued/Cli_A.crt
->
-> ./SSL_klient \ # uruchom klienta
-> 	--ca=certs/pki/ca.crt \
-> 	--key=certs/pki/private/Cli_B.key \
->	--cert=certs/pki/issued/Cli_B.crt
+``` bash
+./SSL_serwer \                               # uruchom serwer
+     --ca=certs/pki/ca.crt \                 # certyfikat główny
+     --key=certs/pki/private/Serwer.key \    # klucz prywatny
+     --cert=certs/pki/issued/Serwer.crt      # certyfikat serwera
+
+./SSL_klient \                               # uruchom klienta
+     --ca=certs/pki/ca.crt \                 # certyfikat główny
+     --key=certs/pki/private/Cli_A.key \     # klucz prywatny
+     --cert=certs/pki/issued/Cli_A.crt       # certyfikat klienta
+
+./SSL_klient \                               # uruchom klienta
+     --ca=certs/pki/ca.crt \                 # certyfikat główny
+     --key=certs/pki/private/Cli_B.key \     # klucz prywatny
+     --cert=certs/pki/issued/Cli_B.crt       # certyfikat klienta
+```
