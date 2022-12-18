@@ -74,3 +74,37 @@ W pliku `vars` znajduje się konfiguracja generowanych certyfikatów, a jej wart
 Parametr `nazwa` oznacza nazwę podmiotu, dla którego wystawiany jest certyfikat (pole `CN - Common Name`). Zwykle jest to imię i nazwisko. Parametr `nopass` jest opcjonalny i oznacza, że certyfikat nie będzie zabezpieczony hasłem (przydatne, gdy zostaje on wczytany przez program np. serwer).
 
 W niektórych dystrubycjach (np. `Debian` krok pierwszy musi być poprzedzony utworzeniem odpowiedniej struktury katalogów: `make-cadir katalog && cd katalog`. Dodatkowo program `easy-rsa` może nazywać się `easyrsa` i może nie występować w `$PATH` - wtedy wywołanie `make-cadir` w utworzonym folderze umieści dowiązanie symboliczne do właściwego programu.
+
+## Przykład uruchomienia programów
+
+Klonowanie, konfigurowanie i budowanie projektu w oddzielnym katalogu:
+> git clone https://github.com/Kuszki/PWSS-SSL-Example # klonuj
+> mkdir build-PWSS-SSL-Example # utwórz katalog budowania
+> cd build-PWSS-SSL-Example # przejdź do katalogu budowania
+> cmake ../PWSS-SSL-Example # konfiguruj projekt
+> cmake --build . # zbuduj dla wybranej konfiguracji
+
+Tworzenie certyfikatów (przykład dla `Debiana`):
+> make-cadir cert # inicjuj katalog z certyfikatami
+> cd cert # przejdź do zainicjowanego katalogu
+> ./easyrsa init-pki # inicjuj strukturę pki
+> ./easyrsa build-ca nopass # zbuduj certyfikat CA
+> ./easyrsa build-server-full Serwer nopass # zbuduj certyfikat serwera
+> ./easyrsa build-client-full Cli_A nopass # zbuduj certyfikat klienta A
+> ./easyrsa build-client-full Cli_B nopass # zbuduj certyfikat klienta B
+
+Uruchamianie programów (z katalogu `build-PWSS-SSL-Example`):
+> ./SSL_serwer \ # uruchom serwer
+> 	--ca=certs/pki/ca.crt \
+> 	--key=certs/pki/private/Serwer.key \
+>	--cert=certs/pki/issued/Serwer.crt
+>
+> ./SSL_klient \ # uruchom klienta
+> 	--ca=certs/pki/ca.crt \
+> 	--key=certs/pki/private/Cli_A.key \
+>	--cert=certs/pki/issued/Cli_A.crt
+>
+> ./SSL_klient \ # uruchom klienta
+> 	--ca=certs/pki/ca.crt \
+> 	--key=certs/pki/private/Cli_B.key \
+>	--cert=certs/pki/issued/Cli_B.crt
