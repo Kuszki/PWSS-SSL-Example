@@ -111,34 +111,49 @@ std::string Wrapper::name(void) const
 {
 	if (!m_sock) return std::string(); // Jeśli obiekt nieaktywny - zakończ
 
-	if (!m_ssl) // Jeśli połączenie nie jest zaszyfrowane
-	{
-		sockaddr_in addr; // Struktura adresu
-		socklen_t len = sizeof(addr); // Długość struktury
+	sockaddr_in addr; // Struktura adresu
+	socklen_t len = sizeof(addr); // Długość struktury
+	std::string peraddr;
 
-		// Pobierz dane związane z gniazdem
-		getpeername(m_sock, (sockaddr*) &addr, &len);
+	// Pobierz dane związane z gniazdem i uzupełnij ciąg
+	if (getpeername(m_sock, (sockaddr*) &addr, &len) != 0)
+		peraddr = inet_ntoa(addr.sin_addr);
 
-		// Konwertuj adres z liczby na łańcuch
-		return inet_ntoa(addr.sin_addr);
-	}
+	// Gdy nie udało się pozyskać danych ustal nazwę na "nieznany"
+	if (peraddr.empty()) peraddr = std::string("unknown peer");
+
+	// Jeśli połączenie nie jest zaszyfrowane zwróć pobrany adres
+	if (!m_ssl) return peraddr;
 
 	// Pobierz certyfikat od połączonego partnera
 	X509 *cert = SSL_get_peer_certificate(m_ssl);
 
 	if (cert != nullptr) // Pobierz informacje o partnerze z certyfikatu
 	{
+		// Przygotuj smart-pointer ułatwiający sprzątanie
+		// w przypadku błędu podczas pozyskiwania nazwy
+		std::unique_ptr<X509, void(*)(X509*)> ptr(cert,
+		[] (X509* p)
+		{
+			if (p) X509_free(p);
+		});
+
 		auto name = X509_get_subject_name(cert); // Dane partnera
-		auto entry = X509_NAME_get_entry(name, 5); // Obiekt nazwy (CN)
+		if (name == nullptr) return peraddr; // Zwróć adres gdy błąd
+
+		// Wyszukaj pierwsze pole odpowiadające nazwie (CN)
+		const int id = X509_NAME_get_index_by_NID(name, NID_commonName, -1);
+		if (id == -1) return peraddr; // Zwróć adres gdy błąd
+
+		auto entry = X509_NAME_get_entry(name, id); // Obiekt nazwy (CN)
+		if (entry == nullptr) return peraddr; // Zwróć adres gdy błąd
+
 		auto data = X509_NAME_ENTRY_get_data(entry); // Dane obiektu
+		if (data == nullptr) return peraddr; // Zwróć adres gdy błąd
 
-		std::string peer = (char*) ASN1_STRING_get0_data(data);
-
-		X509_free(cert); // Zwolnij dane certyfikatu
-
-		return std::move(peer); // Zwróć nazwę partnera
+		return (char*) ASN1_STRING_get0_data(data); // Zwróć nazwę partnera
 	}
-	else return std::string(); // Zwróć pustą nazwę gdy błąd
+	else return peraddr; // Zwróć domyślną nazwę gdy błąd
 }
 
 bool Wrapper::is_ok(Wrapper::error err)

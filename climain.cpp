@@ -29,11 +29,11 @@ int main(int argc, char* argv[])
 	std::string buff; // Bufor na dane
 	buff.reserve(1024); // Rezerwacja pamięci
 
-	Client* client = nullptr; // Instancja klienta
+	std::unique_ptr<Client> client = nullptr; // Instancja klienta
 
 	// Przetworzenie opcji programu - w przypadku błędu zakończ program
 	if (!parser(argc, argv, host, port, cert, key, ca)) return 0;
-	else client = new Client(); // W przeciwnym wypadku utwórz instancje klienta
+	else client = std::make_unique<Client>(); // W przeciwnym wypadku utwórz instancje klienta
 
 	if (!Client::is_ok(client->init(cert, key, ca))) // Inicjuj kontekst SSL
 	{
@@ -52,8 +52,8 @@ int main(int argc, char* argv[])
 	// Lista monitorowanych strumieni
 	pollfd list[] =
 	{
-	     { client->sock(), POLLIN, 0}, // Serwer
-	     { 0, POLLIN, 0 } // Standardowe wejście
+		{ client->sock(), POLLIN, 0}, // Serwer
+		{ 0, POLLIN, 0 } // Standardowe wejście
 	};
 
 	std::cin.clear(); // Wyczyść standardowe wejście
@@ -75,6 +75,5 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	delete client; // Usuń instancje klienta
 	return 0; // Zakończ program
 }

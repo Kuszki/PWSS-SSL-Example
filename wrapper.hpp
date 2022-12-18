@@ -38,8 +38,10 @@
 #include <netdb.h>
 
 #include <algorithm>
+#include <iostream>
 #include <string>
 #include <vector>
+#include <memory>
 #include <map>
 #include <set>
 
@@ -98,8 +100,8 @@ class Wrapper
 
 		//! Inicjalizacja kontekstu SSL nowym kontekstem.
 		error init(const std::string& cert, /*!< [out] Ścieżka pliku z certyfikatem. */
-		           const std::string& key, /*!< [out] Ścieżka pliku z kluczem prywatnym. */
-		           const std::string& ca /*!< [out] Ścieżka pliku z certyfikatem głównym. */);
+				 const std::string& key, /*!< [out] Ścieżka pliku z kluczem prywatnym. */
+				 const std::string& ca /*!< [out] Ścieżka pliku z certyfikatem głównym. */);
 
 		//! Inicjalizacja kontekstu SSL kontekstem współdzielonym.
 		error init(SSL_CTX* ctx /*!< Kontekst SSL. */);
