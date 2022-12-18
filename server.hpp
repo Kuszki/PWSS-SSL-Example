@@ -42,37 +42,37 @@ class Server : public Wrapper
 
 		//! Uruchomienie serwera.
 		error start(const std::string& host = "127.0.0.1", /*!< [in] Adres nasłuchiwania. */
-		            const uint16_t port = 8080, /*!< [in] Numer portu. */
-		            const int queue = 10 /*!< [in] Długość kolejki. */);
+				  const uint16_t port = 8080, /*!< [in] Numer portu. */
+				  const int queue = 10 /*!< [in] Długość kolejki. */);
 
 		//! Wysłanie wektora danych do klienta.
 		error send(const int sock, /*!< [in] Identyfikator klienta. */
-		           const std::vector<char>& data /*!< [in] Dane do wysłania. */);
+				 const std::vector<char>& data /*!< [in] Dane do wysłania. */);
 
 		//! Wysłanie napisu do klienta.
 		error send(const int sock, /*!< [in] Identyfikator klienta. */
-		           const std::string& data /*!< [in] Dane do wysłania. */);
+				 const std::string& data /*!< [in] Dane do wysłania. */);
 
 		error recv(const int sock, /*!< [in] Identyfikator klienta. */
-		           std::vector<char>& data, /*!< [out] Bufor na dane. */
-		           size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
+				 std::vector<char>& data, /*!< [out] Bufor na dane. */
+				 size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
 
 		error recv(const int sock, /*!< [in] Identyfikator klienta. */
-		           std::string& data, /*!< [out] Bufor na dane. */
-		           size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
+				 std::string& data, /*!< [out] Bufor na dane. */
+				 size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
 
 		error close(int sock /*!< [in] Identyfikator klienta. */);
 
 		error accept(void); //!< Akceptacja nowego połączenia.
 
 		error loop(std::set<int>& read, /*!< [out] Zbiór klientów gotowych do odczytu. */
-		           std::set<int>& write, /*!< [out] Zbiór klientów gotowych do zapisu. */
-		           std::set<int>& open, /*!< [out] Zbiór nowo podłączonych klientów. */
-		           const time_t timeout = -1 /*!< [in] Maksymalny czas oczekiwania. */);
+				 std::set<int>& write, /*!< [out] Zbiór klientów gotowych do zapisu. */
+				 std::set<int>& open, /*!< [out] Zbiór nowo podłączonych klientów. */
+				 const time_t timeout = -1 /*!< [in] Maksymalny czas oczekiwania. */);
 
 		error flag(int sock, /*!< [in] Identyfikator klienta. */
-		           short flags, /*!< [in] Flagi do modyfikacji. */
-		           bool mode /*!< [in] Operacja na flagach. */);
+				 short flags, /*!< [in] Flagi do modyfikacji. */
+				 bool mode /*!< [in] Operacja na flagach. */);
 
 		std::string name(int sock /*!< [in] Identyfikator klienta. */) const;
 

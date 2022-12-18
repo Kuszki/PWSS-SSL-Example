@@ -31,8 +31,8 @@ class Client : public Wrapper
 
 		//! Konstruktor zawijający w obiekt.
 		Client(SSL_CTX* ctx, /*!< [in] Kontekst SSL. */
-		       SSL* ssl, /*!< [in] Obiekt SSL. */
-		       int sock /*!< [in] Deskryptor gniazda. */);
+			  SSL* ssl, /*!< [in] Obiekt SSL. */
+			  int sock /*!< [in] Deskryptor gniazda. */);
 
 		Client(Client&&) = default; //! Konstruktor przenoszący - domyślny.
 		Client(void); //!< Konstruktor domyślny.
@@ -41,7 +41,7 @@ class Client : public Wrapper
 
 		//! Nawiązanie połączenia z wybranym serwerem.
 		error open(const std::string& host = "localhost" /*!< [in] Nazwa hosta. */,
-		           const uint16_t port = 8080 /*!< [in] Numer portu. */);
+				 const uint16_t port = 8080 /*!< [in] Numer portu. */);
 
 		//! Wysłanie wektora danych.
 		error send(const std::vector<char>& data /*!< [in] Dane do wysłania. */);
@@ -51,11 +51,11 @@ class Client : public Wrapper
 
 		//! Pobranie wektora danych.
 		error recv(std::vector<char>& data, /*!< [out] Bufor na dane. */
-		           size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
+				 size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
 
 		//! Pobranie napisu.
 		error recv(std::string& data, /*!< [out] Bufor na dane. */
-		           size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
+				 size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
 
 };
 

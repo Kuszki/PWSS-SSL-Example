@@ -32,11 +32,11 @@ int main(int argc, char* argv[])
 	std::string buff; // Bufor na dane
 	buff.reserve(1024); // Rezerwacja pamięci
 
-	Server* server = nullptr; // Instancja serwera
+	std::unique_ptr<Server> server = nullptr; // Instancja serwera
 
 	// Przetworzenie opcji programu - w przypadku błędu zakończ program
 	if (!parser(argc, argv, host, port, cert, key, ca)) return 0;
-	else server = new Server(); // W przeciwnym razie utworzenie instancji serwera
+	else server = std::make_unique<Server>(); // W przeciwnym razie utworzenie instancji serwera
 
 	if (!Server::is_ok(server->init(cert, key, ca))) // Inicjuj kontekst SSL
 	{
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
 	if (!Server::is_ok(server->start(host, port))) // Uruchom serwer
 	{
-		std::cerr << "Unable to start server" << std::endl; return -1;
+		std::cerr << "Unable to start server" << std::endl; return -2;
 	}
 
 	// Pętla będzie wykonywana aż do błędu `poll` lub odebrania sygnału zakończenia
@@ -115,6 +115,5 @@ int main(int argc, char* argv[])
 		write.clear(); // Wyczyść listę gotowych do zapisu
 	}
 
-	delete server; // Usuń instancję serwera
 	return 0; // Zakończ program
 }

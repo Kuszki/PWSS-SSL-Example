@@ -31,12 +31,12 @@
 
 //! Przetwarzanie argumentów programu.
 bool parser(int argc, /*!< [in] Liczba argumentów. */
-            char* argv[], /*!< [in] Lista argumentów. */
-            std::string& host, /*!< [out] Nazwa hosta. */
-            uint16_t& port, /*!< [out] Numer portu. */
-            std::string& cert, /*!< [out] Ścieżka pliku z certyfikatem. */
-            std::string& key, /*!< [out] Ścieżka pliku z kluczem prywatnym. */
-            std::string& ca /*!< [out] Ścieżka pliku z certyfikatem głównym. */);
+		  char* argv[], /*!< [in] Lista argumentów. */
+		  std::string& host, /*!< [out] Nazwa hosta. */
+		  uint16_t& port, /*!< [out] Numer portu. */
+		  std::string& cert, /*!< [out] Ścieżka pliku z certyfikatem. */
+		  std::string& key, /*!< [out] Ścieżka pliku z kluczem prywatnym. */
+		  std::string& ca /*!< [out] Ścieżka pliku z certyfikatem głównym. */);
 
 //! Pobranie aktualnego czasu w formacie tekstowym.
 std::string timestr(void);

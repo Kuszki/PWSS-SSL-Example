@@ -26,7 +26,7 @@ Client::Client(void)
 }
 
 Client::Client(SSL_CTX* ctx, SSL* ssl, int sock)
-     : Client() // Wywołaj konstruktor domyślny
+: Client() // Wywołaj konstruktor domyślny
 {
 	m_shared = true; // Zapamiętaj status kontekstu
 
@@ -61,8 +61,8 @@ Wrapper::error Client::open(const std::string& host, const uint16_t port)
 	{
 		// Na podstawie danych spróbuj utworzyć gniazdo
 		if ((sockfd = ::socket(p->ai_family,
-		                       p->ai_socktype,
-		                       p->ai_protocol)) == -1)
+						   p->ai_socktype,
+						   p->ai_protocol)) == -1)
 		{
 			sockfd = 0; // Gdy błąd - przejdź dalej
 			continue; // do kolejnego elementu
@@ -70,8 +70,8 @@ Wrapper::error Client::open(const std::string& host, const uint16_t port)
 
 		// Spróbuj nawiązać połączenie
 		if (::connect(sockfd,
-		              p->ai_addr,
-		              p->ai_addrlen) == -1)
+				    p->ai_addr,
+				    p->ai_addrlen) == -1)
 		{
 			::close(sockfd); // Gdy błąd - zamknij
 			sockfd = 0; // gniazdo po czym przejdź
@@ -151,7 +151,7 @@ Wrapper::error Client::recv(std::vector<char>& data, size_t size)
 
 	// W przypadku powodzenia - skopiuj odebrane dane z bufora do kontenera
 	else std::copy(buff, buff + num,
-	               std::back_inserter(data));
+				std::back_inserter(data));
 
 	return error::no_error; // Zwróć powodzenie operacji
 }

@@ -28,8 +28,8 @@ Server::Server(void)
 Server::~Server(void) {} // Destruktor dla zachowania porządku
 
 Wrapper::error Server::start(const std::string& host,
-                   const uint16_t port,
-                   const int queue)
+			    const uint16_t port,
+			    const int queue)
 {
 	static const int yes = 1; // Zmienna do ustawienia opcji `SO_REUSEADDR`
 	if (m_sock) Wrapper::close(); // Zatrzymaj serwer, jeśli jest aktywny
@@ -83,7 +83,7 @@ Wrapper::error Server::start(const std::string& host,
 }
 
 Wrapper::error Server::send(const int sock,
-                  const std::vector<char>& data)
+			   const std::vector<char>& data)
 {
 	// Jeśli klient istnieje - wyślij dane
 	if (!m_clients.contains(sock)) return error::no_client_found;
@@ -98,8 +98,8 @@ Wrapper::error Server::send(const int sock, const std::string& data)
 }
 
 Wrapper::error Server::recv(const int sock,
-                  std::vector<char>& data,
-                  size_t size)
+			   std::vector<char>& data,
+			   size_t size)
 {
 	// Jeśli klient istnieje - odbierz dane
 	if (!m_clients.contains(sock)) return error::no_client_found;
@@ -135,9 +135,9 @@ Wrapper::error Server::close(int sock)
 }
 
 Wrapper::error Server::loop(std::set<int>& read,
-                  std::set<int>& write,
-                  std::set<int>& open,
-                  const time_t timeout)
+			   std::set<int>& write,
+			   std::set<int>& open,
+			   const time_t timeout)
 {
 	// Sprawdź wszystkie gniazda pod kątem ich obsługi
 	int count = poll(m_sockets.data(), m_sockets.size(), timeout);
@@ -242,8 +242,8 @@ Wrapper::error Server::accept(void)
 	// Dodaj gniazdo do listy klientów i utwórz obiekt klienta
 	m_sockets.push_back({ sock, POLLIN, 0 });
 	m_clients.emplace(std::piecewise_construct,
-	                  std::forward_as_tuple(sock),
-	                  std::forward_as_tuple(m_ctx, ssl, sock));
+				   std::forward_as_tuple(sock),
+				   std::forward_as_tuple(m_ctx, ssl, sock));
 
 	return error::no_error; // Zwróć informacje o powodzeniu
 }

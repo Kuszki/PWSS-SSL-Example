@@ -32,6 +32,6 @@
 
 //! Główna funkcja programu.
 int main(int argc, /*!< [in] Liczba argumentów. */
-         char* argp[] /*!< [in] Lista argumentów. */);
+	    char* argp[] /*!< [in] Lista argumentów. */);
 
 #endif // SRVMAIN_HPP

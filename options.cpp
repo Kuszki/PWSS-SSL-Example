@@ -21,11 +21,11 @@
 #include "options.hpp"
 
 bool parser(int argc, char* argv[],
-            std::string& host,
-            uint16_t& port,
-            std::string& cert,
-            std::string& key,
-            std::string& ca)
+		  std::string& host,
+		  uint16_t& port,
+		  std::string& cert,
+		  std::string& key,
+		  std::string& ca)
 {
 	using namespace boost::program_options;
 
@@ -36,16 +36,16 @@ bool parser(int argc, char* argv[],
 
 		desc.add_options() // Utworzenie listy opcji
 
-		          ("host", value<>(&host)->default_value("127.0.0.1")->required(), "Host name")
-		          ("port", value<>(&port)->default_value(8080)->required(), "Port number")
-		          ("cert", value<>(&cert)->required(), "X509 certyficate file")
-		          ("key", value<>(&key)->required(), "Private key file")
-		          ("ca", value<>(&ca)->required(), "CA root certyficate file")
+				("host", value<>(&host)->default_value("127.0.0.1")->required(), "Host name")
+				("port", value<>(&port)->default_value(8080)->required(), "Port number")
+				("cert", value<>(&cert)->required(), "X509 certyficate file")
+				("key", value<>(&key)->required(), "Private key file")
+				("ca", value<>(&ca)->required(), "CA root certyficate file")
 
-		          ("config", value<std::string>(), "Use config form selected file")
+				("config", value<std::string>(), "Use config form selected file")
 
-		          ("version,v", "Display program version")
-		          ("help,h", "Display help message");
+				("version,v", "Display program version")
+				("help,h", "Display help message");
 
 		// Przetworzenie opcji programu i zapis w kontenerze
 		store(parse_command_line(argc, argv, desc), vm);
@@ -89,8 +89,8 @@ std::string timestr(void)
 
 	// Pobranie czasu w formacie tekstowym
 	strftime(buffer, sizeof(buffer),
-	         "%d.%m.%Y %H:%M:%S\t",
-	         timeinfo);
+		    "%d.%m.%Y %H:%M:%S\t",
+		    timeinfo);
 
 	return buffer; // Zwrócenie łańcucha
 }
