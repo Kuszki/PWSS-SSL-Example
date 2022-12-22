@@ -106,8 +106,8 @@ cmake --build .                                         # zbuduj dla wybranej ko
 
 Tworzenie certyfikatów (przykład dla `Debiana`):
 ``` bash
-make-cadir cert                              # inicjuj katalog z certyfikatami
-cd cert                                      # przejdź do zainicjowanego katalogu
+make-cadir certs                             # inicjuj katalog z certyfikatami
+cd certs                                     # przejdź do zainicjowanego katalogu
 ./easyrsa init-pki                           # inicjuj strukturę pki
 ./easyrsa build-ca nopass                    # zbuduj certyfikat CA
 ./easyrsa build-server-full Serwer nopass    # zbuduj certyfikat serwera
