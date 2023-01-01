@@ -240,7 +240,7 @@ Wrapper::error Server::accept(void)
 	}
 
 	// Dodaj gniazdo do listy klientów i utwórz obiekt klienta
-	m_sockets.push_back({ sock, POLLIN, 0 });
+	m_sockets.push_back({ sock, POLLIN | POLLHUP, 0 });
 	m_clients.emplace(std::piecewise_construct,
 				   std::forward_as_tuple(sock),
 				   std::forward_as_tuple(m_ctx, ssl, sock));

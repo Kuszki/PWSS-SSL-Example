@@ -75,12 +75,17 @@ int main(int argc, char* argv[])
 			const std::string name = server->name(i);
 
 			// Jeśli pobrano nowe dane, dodaj komunikat do kolejki klientów
-			if (Server::is_ok(server->recv(i, buff))) for (const auto& k : list)
+			if (Server::is_ok(server->recv(i, buff)))
 			{
-				if (k != i) // Pomiń bieżącego klienta
+				std::cout << time << "Message from: '" << name << "' > " << buff << std::endl;
+
+				for (const auto& k : list)
 				{
-					queue[k] += time + name + " > " + buff + '\n'; // Wiadomość
-					server->flag(k, POLLOUT, true); // Monitoruj gniazdo (zapis)
+					if (k != i) // Pomiń bieżącego klienta
+					{
+						queue[k] += time + name + " > " + buff + '\n'; // Wiadomość
+						server->flag(k, POLLOUT, true); // Monitoruj gniazdo (zapis)
+					}
 				}
 			}
 			else // Jeśli nie udało się pobrać danych (rozłączenie lub błąd)
