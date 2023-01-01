@@ -69,8 +69,8 @@ int main(int argc, char* argv[])
 			// Pobierz nazwę klienta na podstawie certyfikatu
 			const std::string name = server->name(i);
 
-			queue[i] += time + "Welcome to the server, revision is " +
-					  Server::version() + "\n";
+			queue[i] += time + "Welcome to the server rev. " +
+					  Server::version(true) + "\n";
 			server->flag(i, POLLOUT, true);
 
 			// Dodaj do kolejki wszystkich klientów informację o nowym połączeniu
