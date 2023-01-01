@@ -132,3 +132,14 @@ Uruchamianie programów (z katalogu `build-PWSS-SSL-Example`):
      --key=certs/pki/private/Cli_B.key \     # klucz prywatny
      --cert=certs/pki/issued/Cli_B.crt       # certyfikat klienta
 ```
+
+Działanie serwera:
+![Serwer](https://user-images.githubusercontent.com/6035437/210174752-ae0edd13-c09d-4a64-9991-4f201c135cde.png)
+
+Klient pierwszy:
+![Klient_A](https://user-images.githubusercontent.com/6035437/210174767-edd180f3-21c0-4990-914e-f2529c93ec47.png)
+
+Klient drugi:
+![KlientBB](https://user-images.githubusercontent.com/6035437/210174773-52eef4e4-3046-4657-aff8-06815a0a0abc.png)
+
+Działanie programów kończy sygnał `SIGINT` wywołany kombinacją `Ctrl+C` w terminalu. Zakończenie pracy serwera rozłącza wszystkich klientów, którzy w efekcie wychodzą z funkcji `main` wraz z kodem błędu `-1` (emulator terminala `fish` wyświetla na czerwono liczbę `255`).
