@@ -20,8 +20,18 @@
 
 #include "climain.hpp"
 
+void handler(int signal)
+{
+	std::cout << "Recived signal: " << signal
+			<< ", terminating app" << std::endl;
+}
+
 int main(int argc, char* argv[])
 {
+	std::signal(SIGABRT, handler); // Błąd krytyczny (np. libc)
+	std::signal(SIGINT, handler); // Kombinacja CTRL+C w terminalu
+	std::signal(SIGTERM, handler); // Proces zakończony (np. kill)
+
 	std::string cert, key, ca; // Konfiguracja SSL
 	std::string host = "localhost"; // Nazwa hosta
 	uint16_t port = 8080; // Numer portu serwera

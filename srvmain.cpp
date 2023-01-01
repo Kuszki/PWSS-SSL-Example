@@ -20,8 +20,18 @@
 
 #include "srvmain.hpp"
 
+void handler(int signal)
+{
+	std::cout << "Recived signal: " << signal
+			<< ", terminating app" << std::endl;
+}
+
 int main(int argc, char* argv[])
 {
+	std::signal(SIGABRT, handler); // Błąd krytyczny (np. libc)
+	std::signal(SIGINT, handler); // Kombinacja CTRL+C w terminalu
+	std::signal(SIGTERM, handler); // Proces zakończony (np. kill)
+
 	std::map<int, std::string> queue; // Kolejka komunikatów do klientów
 	std::set<int> read, write, open; // Zbiory na gotowych klientów
 

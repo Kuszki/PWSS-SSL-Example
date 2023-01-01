@@ -23,6 +23,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <csignal>
 #include <string>
 
 #include "client.hpp"
@@ -30,6 +31,9 @@
 
 //! Główna funkcja programu.
 int main(int argc, /*!< [in] Liczba argumentów. */
-         char* argp[] /*!< [in] Lista argumentów. */);
+	    char* argp[] /*!< [in] Lista argumentów. */);
+
+//! Obsługa sygnałów systemu operacyjnego.
+void handler(int signal /*!< [in] Numer sygnału. */);
 
 #endif // CLIMAIN_HPP
