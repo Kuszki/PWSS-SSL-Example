@@ -51,7 +51,15 @@ bool parser(int argc, char* argv[],
 		store(parse_command_line(argc, argv, desc), vm);
 
 		// Jeśli wybrano "--version lub -v" - wyświetlenie wersji i zakończenie funkcji
-		if (vm.count("version")) { std::cout << Wrapper::version() << std::endl; return false; }
+		if (vm.count("version"))
+		{
+			std::cout << argv[0] << "\thttps://github.com/Kuszki/PWSS-SSL-Example"
+					<< "\nrevision:\t" << Wrapper::version()
+					<< "\ncompiler:\t" << Wrapper::compiler()
+					<< std::endl;
+
+			return false;
+		}
 
 		// Jeśli wybrano "--help lub -h" - wyświetlenie pomocy i zakończenie funkcji
 		else if (vm.count("help")) { std::cout << desc << std::endl; return false; }

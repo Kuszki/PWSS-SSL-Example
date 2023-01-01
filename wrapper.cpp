@@ -166,3 +166,8 @@ std::string Wrapper::version(bool sh)
 	if (sh) return GIT_HASH_SHORT;
 	else return GIT_HASH_LONG;
 }
+
+std::string Wrapper::compiler(void)
+{
+	return COMPILER_NAME " v" COMPILER_VERSION " @ " SYSTEM_NAME;
+}

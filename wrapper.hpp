@@ -116,7 +116,8 @@ class Wrapper
 		Wrapper& operator= (Wrapper&&) = delete; //!< Operator przeniesienia (usunięty).
 
 		static bool is_ok(Wrapper::error err /*!< [in] Kod błędu. */); //!< Sprawdzenie, czy nie wystąpił błąd.
-		static std::string version(bool sh = true /*!< [in] Format */); //!< Pobranie numeru wersji.
+		static std::string version(bool sh = false /*!< [in] Format */); //!< Pobranie numeru wersji.
+		static std::string compiler(void); //!< Pobranie nazwy i wersji kompilatora.
 
 };
 
