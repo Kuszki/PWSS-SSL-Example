@@ -142,4 +142,4 @@ Klient pierwszy:
 Klient drugi:
 ![KlientBB](https://user-images.githubusercontent.com/6035437/210174773-52eef4e4-3046-4657-aff8-06815a0a0abc.png)
 
-Działanie programów kończy sygnał `SIGINT` wywołany kombinacją `Ctrl+C` w terminalu. Zakończenie pracy serwera rozłącza wszystkich klientów, którzy w efekcie wychodzą z funkcji `main` wraz z kodem błędu `-1` (emulator terminala `fish` wyświetla na czerwono liczbę `255`).
+Działanie programów kończy sygnał `SIGINT` wywołany kombinacją `Ctrl+C` w terminalu. Zakończenie pracy serwera rozłącza wszystkich klientów, którzy w efekcie wychodzą z funkcji `main` wraz z kodem błędu `-1` (powłoka `fish` wyświetla na czerwono liczbę `255`).
