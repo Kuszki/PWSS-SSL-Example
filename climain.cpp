@@ -22,7 +22,8 @@
 
 void handler(int signal)
 {
-	std::cout << "Recived signal: " << signal
+	std::cout << std::endl << timestr()
+			<< "Recived signal: " << signal
 			<< ", terminating app" << std::endl;
 }
 
@@ -47,16 +48,17 @@ int main(int argc, char* argv[])
 
 	if (!Client::is_ok(client->init(cert, key, ca))) // Inicjuj kontekst SSL
 	{
-		std::cerr << "Unable to init SSL context" << std::endl; return -1;
+		std::cerr << timestr() << "Unable to init SSL context" << std::endl; return -1;
 	}
+	else std::cout << timestr() << "Certificates loaded successfully" << std::endl;
 
 	if (!Client::is_ok(client->open(host, port))) // Nawiąż połączenie z serwerem
 	{
-		std::cerr << "Unable to open connection" << std::endl; return -1;
+		std::cerr << timestr() << "Unable to open connection" << std::endl; return -1;
 	}
 	else
 	{
-		std::cout << "Connected with '" << client->name() << "'" << std::endl;
+		std::cout << timestr() << "Connected with '" << client->name() << "'" << std::endl;
 	}
 
 	// Lista monitorowanych strumieni
@@ -72,7 +74,10 @@ int main(int argc, char* argv[])
 	{
 		if (list[0].revents & POLLIN) // Sprawdź, czy można odczytać z serwera
 		{
-			if (!Client::is_ok(client->recv(buff))) return -1; // W przypadku niepowodzenia zakończ program
+			if (!Client::is_ok(client->recv(buff))) // W przypadku niepowodzenia zakończ program
+			{
+				std::cout << timestr() << "Server closed connection, terminating app" << std::endl; return -1;
+			}
 			else { std::cout << buff; buff.clear(); } // Wyświetl dane i wyczyść bufor
 		}
 
@@ -80,7 +85,10 @@ int main(int argc, char* argv[])
 		{
 			std::getline(std::cin, buff); // Pobierz dane z terminala
 
-			if (!Client::is_ok(client->send(buff))) return -2; // Zakończ, jeśli nie udało się wysłać
+			if (!Client::is_ok(client->send(buff)))// Zakończ, jeśli nie udało się wysłać
+			{
+				std::cout << timestr() << "Unable to send data, terminating app" << std::endl; return -2;
+			}
 			else buff.clear(); // W przeciwnym razie wyczyść bufor (do ponownego użycia)
 		}
 	}

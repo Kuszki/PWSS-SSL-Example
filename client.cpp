@@ -134,7 +134,7 @@ Wrapper::error Client::send(const std::string& data)
 	return size == 0 ? error::no_error : error::send_call_error; // Jeśli wysłano wszystkie dane - zwróć powodzenie
 }
 
-Wrapper::error Client::recv(std::vector<char>& data, size_t size)
+Wrapper::error Client::recv(std::vector<char>& data, size_t size, bool append)
 {
 	if (!m_sock) return error::no_active_socket; // Jeśli połączenie nie jest aktywne - zwróć błąd
 
@@ -150,13 +150,13 @@ Wrapper::error Client::recv(std::vector<char>& data, size_t size)
 	if (num <= 0) return error::recv_call_error; // W przypadku błędu - zakończ
 
 	// W przypadku powodzenia - skopiuj odebrane dane z bufora do kontenera
-	else std::copy(buff, buff + num,
-				std::back_inserter(data));
+	else if (append) data.insert(data.end(), buff, buff + num); // Dopisz dane do bufora
+	else data.assign(buff, buff + num); // Zastąp dane w buforze
 
 	return error::no_error; // Zwróć powodzenie operacji
 }
 
-Wrapper::error Client::recv(std::string& data, size_t size)
+Wrapper::error Client::recv(std::string& data, size_t size, bool append)
 {
 	if (!m_sock) return error::no_active_socket; // Jeśli połączenie nie jest aktywne - zwróć błąd
 
@@ -170,7 +170,8 @@ Wrapper::error Client::recv(std::string& data, size_t size)
 	else num = ::recv(m_sock, buff, size, 0);
 
 	if (num <= 0) return error::recv_call_error; // W przypadku błędu - zakończ
-	else data.append(buff, num); // Dopisz dane do bufora
+	else if (append) data.append(buff, num); // Dopisz dane do bufora
+	else data.assign(buff, num); // Zastąp dane w buforze
 
 	return error::no_error; // Zwróć powodzenie operacji
 }

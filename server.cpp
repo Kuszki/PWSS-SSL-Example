@@ -97,20 +97,18 @@ Wrapper::error Server::send(const int sock, const std::string& data)
 	else return m_clients[sock].send(data);
 }
 
-Wrapper::error Server::recv(const int sock,
-			   std::vector<char>& data,
-			   size_t size)
+Wrapper::error Server::recv(const int sock, std::vector<char>& data, size_t size, bool append)
 {
 	// Jeśli klient istnieje - odbierz dane
 	if (!m_clients.contains(sock)) return error::no_client_found;
-	else return m_clients[sock].recv(data, size);
+	else return m_clients[sock].recv(data, size, append);
 }
 
-Wrapper::error Server::recv(const int sock, std::string& data, size_t size)
+Wrapper::error Server::recv(const int sock, std::string& data, size_t size, bool append)
 {
 	// Jeśli klient istnieje - odbierz dane
 	if (!m_clients.contains(sock)) return error::no_client_found;
-	else return m_clients[sock].recv(data, size);
+	else return m_clients[sock].recv(data, size, append);
 }
 
 Wrapper::error Server::close(int sock)

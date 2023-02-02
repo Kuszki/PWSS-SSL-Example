@@ -55,11 +55,13 @@ class Server : public Wrapper
 
 		error recv(const int sock, /*!< [in] Identyfikator klienta. */
 				 std::vector<char>& data, /*!< [out] Bufor na dane. */
-				 size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
+				 size_t size = 1024, /*!< [in] Maksymalna liczba danych. */
+				 bool append = false /*!< [in] Dodaj dane do bufora. */);
 
 		error recv(const int sock, /*!< [in] Identyfikator klienta. */
 				 std::string& data, /*!< [out] Bufor na dane. */
-				 size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
+				 size_t size = 1024, /*!< [in] Maksymalna liczba danych. */
+				 bool append = false /*!< [in] Dodaj dane do bufora. */);
 
 		error close(int sock /*!< [in] Identyfikator klienta. */);
 

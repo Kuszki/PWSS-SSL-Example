@@ -22,7 +22,8 @@
 
 void handler(int signal)
 {
-	std::cout << "Recived signal: " << signal
+	std::cout << std::endl << timestr()
+			<< "Recived signal: " << signal
 			<< ", terminating app" << std::endl;
 }
 
@@ -33,7 +34,7 @@ int main(int argc, char* argv[])
 	std::signal(SIGTERM, handler); // Proces zakończony (np. kill)
 
 	std::map<int, std::string> queue; // Kolejka komunikatów do klientów
-	std::set<int> read, write, open; // Zbiory na gotowych klientów
+	std::set<int> read, write, open, close; // Zbiory na gotowych klientów
 
 	std::string cert, key, ca; // Opcje kontekstu SSL
 	std::string host = "127.0.0.1"; // Adres nasłuchiwania
@@ -50,13 +51,15 @@ int main(int argc, char* argv[])
 
 	if (!Server::is_ok(server->init(cert, key, ca))) // Inicjuj kontekst SSL
 	{
-		std::cerr << "Unable to init SSL context" << std::endl; return -1;
+		std::cerr << timestr() << "Unable to init SSL context" << std::endl; return -1;
 	}
+	else std::cout << timestr() << "Certificates loaded successfully" << std::endl;
 
 	if (!Server::is_ok(server->start(host, port))) // Uruchom serwer
 	{
-		std::cerr << "Unable to start server" << std::endl; return -2;
+		std::cerr << timestr() << "Unable to start server" << std::endl; return -2;
 	}
+	else std::cout << timestr() << "Server is waiting for connections" << std::endl;
 
 	// Pętla będzie wykonywana aż do błędu `poll` lub odebrania sygnału zakończenia
 	while (Server::is_ok(server->loop(read, write, open)))
@@ -68,19 +71,21 @@ int main(int argc, char* argv[])
 		{
 			// Pobierz nazwę klienta na podstawie certyfikatu
 			const std::string name = server->name(i);
+			const std::string msg = time + name + " joined the chat\n";
+			const std::string welcome = time + "Welcome to the server rev. " +
+								   Server::version(true) + "\n";
 
-			queue[i] += time + "Welcome to the server rev. " +
-					  Server::version(true) + "\n";
-			server->flag(i, POLLOUT, true);
+			std::cout << time << "Accepted client: '" << name << "'" << std::endl;
+
+			queue[i] += welcome; // Dodaj wiadomość do kolejki wysyłania klienta
+			server->flag(i, POLLOUT, true); // Monitoruj gniazdo (zapis)
 
 			// Dodaj do kolejki wszystkich klientów informację o nowym połączeniu
 			for (const auto& k : list) if (k != i)
 			{
-				queue[k] += time + name + " joined the chat\n"; // Wiadomość
+				queue[k] += msg; // Dodaj wiadomość do kolejki wysyłania klienta
 				server->flag(k, POLLOUT, true); // Monitoruj gniazdo (zapis)
 			}
-
-			std::cout << time << "Accepted client: '" << name << "'" << std::endl;
 		}
 
 		for (const auto& i : read) // Pobierz dane od klientów
@@ -92,32 +97,16 @@ int main(int argc, char* argv[])
 			if (Server::is_ok(server->recv(i, buff)))
 			{
 				std::cout << time << "Message from: '" << name << "' > " << buff << std::endl;
+				const std::string msg = time + name + " > " + buff + '\n'; // Wiadomość
 
-				for (const auto& k : list)
-				{
-					if (k != i) // Pomiń bieżącego klienta
-					{
-						queue[k] += time + name + " > " + buff + '\n'; // Wiadomość
-						server->flag(k, POLLOUT, true); // Monitoruj gniazdo (zapis)
-					}
-				}
-			}
-			else // Jeśli nie udało się pobrać danych (rozłączenie lub błąd)
-			{
-				// Dodaj komunikat o rozłączeniu dla pozostałych klientów
+				// Dodaj wiadomość klienta do kolejek pozostałych klientów
 				for (const auto& k : list) if (k != i)
 				{
-					queue[k] += time + name + " leaved the chat\n"; // Wiadomość
+					queue[k] += msg; // Dodaj wiadomość do kolejki wysyłania klienta
 					server->flag(k, POLLOUT, true); // Monitoruj gniazdo (zapis)
 				}
-
-				server->close(i); // Zamknij połączenie
-				queue.erase(i); // Usuń kolejkę klienta
-
-				std::cout << time << "Dissconnected client: '" << name << "'" << std::endl;
 			}
-
-			buff.clear(); // Wyczyść roboczy bufor na dane
+			else close.insert(i); // Jeśli nie udało się pobrać danych (rozłączenie lub błąd)
 		}
 
 		for (const auto& i : write) if (queue.contains(i)) // Wyślij dane do klientów
@@ -127,11 +116,32 @@ int main(int argc, char* argv[])
 				server->flag(i, POLLOUT, false); // Nie monitoruj możliwości zapisu
 				queue.erase(i); // Usuń kolejkę zapisu klienta (dane są wysłane)
 			}
+			else close.insert(i); // W przypadku błędu zamknij połączenie
+		} else server->flag(i, POLLOUT, false); // Gdyby flaga była niepotrzebnie ustawiona
+
+		for (const auto& i : close) // Zamknij oflagowane połączenia
+		{
+			// Pobierz nazwę klienta na podstawie certyfikatu
+			const std::string name = server->name(i);
+			const std::string msg = time + name + " leaved the chat\n";
+
+			std::cout << time << "Dissconnected client: '" << name << "'" << std::endl;
+
+			// Dodaj komunikat o rozłączeniu do kolejek pozostałych klientów
+			for (const auto& k : list) if (!close.contains(k))
+			{
+				queue[k] += msg; // Dodaj wiadomość do kolejki wysyłania klienta
+				server->flag(k, POLLOUT, true); // Monitoruj gniazdo (zapis)
+			}
+
+			server->close(i); // Zamknij połączenie
+			queue.erase(i); // Usuń kolejkę klienta
 		}
 
 		open.clear(); // Wyczyść listę nowych klientów
 		read.clear(); // Wyczyść listę gotowych do odczytu
 		write.clear(); // Wyczyść listę gotowych do zapisu
+		close.clear(); // Wyczyść listę zakończonych połączeń
 	}
 
 	return 0; // Zakończ program

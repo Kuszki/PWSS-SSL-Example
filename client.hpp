@@ -51,11 +51,13 @@ class Client : public Wrapper
 
 		//! Pobranie wektora danych.
 		error recv(std::vector<char>& data, /*!< [out] Bufor na dane. */
-				 size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
+				 size_t size = 1024, /*!< [in] Maksymalna liczba danych. */
+				 bool append = false /*!< [in] Dodaj dane do bufora. */);
 
 		//! Pobranie napisu.
 		error recv(std::string& data, /*!< [out] Bufor na dane. */
-				 size_t size = 1024 /*!< [in] Maksymalna liczba danych. */);
+				 size_t size = 1024, /*!< [in] Maksymalna liczba danych. */
+				 bool append = false /*!< [in] Dodaj dane do bufora. */);
 
 };
 
