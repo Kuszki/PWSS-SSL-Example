@@ -23,7 +23,7 @@
 void handler(int signal)
 {
 	std::cout << std::endl << timestr()
-			<< "Recived signal: " << signal
+			<< "Recived signal " << signal
 			<< ", terminating app" << std::endl;
 }
 
@@ -58,7 +58,8 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		std::cout << timestr() << "Connected with '" << client->name() << "'" << std::endl;
+		std::cout << timestr() << "Connected with '" << client->name() << "'"
+				<< "using " << client->cipher() << " cipher" << std::endl;
 	}
 
 	// Lista monitorowanych strumieni

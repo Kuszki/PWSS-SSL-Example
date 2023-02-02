@@ -77,6 +77,7 @@ class Server : public Wrapper
 				 bool mode /*!< [in] Operacja na flagach. */);
 
 		std::string name(int sock /*!< [in] Identyfikator klienta. */) const;
+		std::string cipher(int sock /*!< [in] Identyfikator klienta. */) const;
 
 		std::set<int> list(void) const;
 

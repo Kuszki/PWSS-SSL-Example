@@ -201,6 +201,13 @@ std::string Server::name(int sock) const
 	else return m_clients.at(sock).name();
 }
 
+std::string Server::cipher(int sock) const
+{
+	// Jeśli klient istnieje - zwróć jego nazwę
+	if (!m_clients.contains(sock)) return std::string();
+	else return m_clients.at(sock).cipher();
+}
+
 Wrapper::error Server::accept(void)
 {
 	if (!m_sock) return error::no_active_socket; // Jeśli serwer nie jest aktywny - zwróć błąd

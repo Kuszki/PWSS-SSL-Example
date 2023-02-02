@@ -23,7 +23,7 @@
 void handler(int signal)
 {
 	std::cout << std::endl << timestr()
-			<< "Recived signal: " << signal
+			<< "Recived signal " << signal
 			<< ", terminating app" << std::endl;
 }
 
@@ -72,10 +72,11 @@ int main(int argc, char* argv[])
 			// Pobierz nazwę klienta na podstawie certyfikatu
 			const std::string name = server->name(i);
 			const std::string msg = time + name + " joined the chat\n";
-			const std::string welcome = time + "Welcome to the server rev. " +
+			const std::string welcome = time + "Welcome to the server revision " +
 								   Server::version(true) + "\n";
 
-			std::cout << time << "Accepted client: '" << name << "'" << std::endl;
+			std::cout << time << "Accepted client '" << name << "'"
+					<< "using " << server->cipher(i) << " cipher" << std::endl;
 
 			queue[i] += welcome; // Dodaj wiadomość do kolejki wysyłania klienta
 			server->flag(i, POLLOUT, true); // Monitoruj gniazdo (zapis)
@@ -96,7 +97,7 @@ int main(int argc, char* argv[])
 			// Jeśli pobrano nowe dane, dodaj komunikat do kolejki klientów
 			if (Server::is_ok(server->recv(i, buff)))
 			{
-				std::cout << time << "Message from: '" << name << "' > " << buff << std::endl;
+				std::cout << time << "Message from '" << name << "' > " << buff << std::endl;
 				const std::string msg = time + name + " > " + buff + '\n'; // Wiadomość
 
 				// Dodaj wiadomość klienta do kolejek pozostałych klientów
@@ -125,7 +126,7 @@ int main(int argc, char* argv[])
 			const std::string name = server->name(i);
 			const std::string msg = time + name + " leaved the chat\n";
 
-			std::cout << time << "Dissconnected client: '" << name << "'" << std::endl;
+			std::cout << time << "Dissconnected client '" << name << "'" << std::endl;
 
 			// Dodaj komunikat o rozłączeniu do kolejek pozostałych klientów
 			for (const auto& k : list) if (!close.contains(k))

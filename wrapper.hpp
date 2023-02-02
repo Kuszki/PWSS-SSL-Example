@@ -111,6 +111,7 @@ class Wrapper
 		int sock(void) const; //!< Pobranie identyfikatora gniazda.
 
 		std::string name(void) const; //!< Pobranie nazwy hosta.
+		std::string cipher(void) const; //!< Pobranie nazwy szyfru.
 
 		Wrapper& operator= (const Wrapper&) = delete; //!< Operator przypisania (usunięty).
 		Wrapper& operator= (Wrapper&&) = delete; //!< Operator przeniesienia (usunięty).

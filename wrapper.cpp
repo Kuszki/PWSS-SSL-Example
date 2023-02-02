@@ -156,6 +156,12 @@ std::string Wrapper::name(void) const
 	else return peraddr; // Zwróć domyślną nazwę gdy błąd
 }
 
+std::string Wrapper::cipher(void) const
+{
+	if (!m_ssl) return "noone";
+	else return SSL_get_cipher(m_ssl);
+}
+
 bool Wrapper::is_ok(Wrapper::error err)
 {
 	return err == error::no_error;
