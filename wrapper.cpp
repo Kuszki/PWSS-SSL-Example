@@ -68,7 +68,7 @@ Wrapper::error Wrapper::init(const std::string& cert, const std::string& key, co
 	{
 		// Weryfikuj certyfikat peera oraz przerywaj handshake gdy brak/błędny certyfikat
 		SSL_CTX_set_verify(m_ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, nullptr);
-		SSL_CTX_set_options(m_ctx, SSL_OP_NO_SSLv2); // Wyłącz starą wersję SSL
+		SSL_CTX_set_min_proto_version(m_ctx, TLS1_3_VERSION); // Wymuś wersję TLS 1.3 lub większą
 	}
 
 	return ok ? error::no_error : error::create_context_fail; // Zwróć powodzenie operacji
