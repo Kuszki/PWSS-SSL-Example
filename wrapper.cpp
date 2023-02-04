@@ -66,7 +66,8 @@ Wrapper::error Wrapper::init(const std::string& cert, const std::string& key, co
 
 	if (ok) // Jeśli wszystko OK, ustaw dodatkowe flagi
 	{
-		SSL_CTX_set_verify(m_ctx, SSL_VERIFY_PEER, nullptr); // Weryfikuj certyfikat peera
+		// Weryfikuj certyfikat peera oraz przerywaj handshake gdy brak/błędny certyfikat
+		SSL_CTX_set_verify(m_ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, nullptr);
 		SSL_CTX_set_options(m_ctx, SSL_OP_NO_SSLv2); // Wyłącz starą wersję SSL
 	}
 
