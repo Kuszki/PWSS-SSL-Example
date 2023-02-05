@@ -79,7 +79,7 @@ class Server : public Wrapper
 		std::string name(int sock /*!< [in] Identyfikator klienta. */) const;
 		std::string cipher(int sock /*!< [in] Identyfikator klienta. */) const;
 
-		std::set<int> list(void) const;
+		std::set<int> list(void) const; //!< Lista wszystkich klientów.
 
 };
 
