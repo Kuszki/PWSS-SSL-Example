@@ -63,6 +63,11 @@ openssl req -new -sha256 -key client.key -out client.csr
 openssl x509 -req -in client.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out client.crt -sha256
 ```
 
+Certyfikaty wraz z kluczami prywatnymi mogą być umieszczane w jednym pliku. Ten sposób ułatwia dystrybucję certyfikatów oraz umożliwia ich importowanie w przeglądarkach internetowych. Należy w tym celu wygenerować plik w formacie `pkcs12`:
+``` bash
+openssl pkcs12 -export -out nazwa.p12 -inkey klucz.key -in certyfikat.crt
+```
+
 ### Przy użyciu `easy-rsa`
 
 1) Zainicjować folder pki:
@@ -85,13 +90,19 @@ easy-rsa build-server-full nazwa nopass
 easy-rsa build-client-full nazwa nopass
 ```
 
+5) Opcjonalnie eksportować certyfikat do pliku `pkcs12`:
+
+``` bash
+easy-rsa export-p12 nazwa
+```
+
 ### Informacje o `easy-rsa`
 
 W pliku `vars` znajduje się konfiguracja generowanych certyfikatów, a jej wartości domyślne zależą od opiekuna pakietu `easy-rsa`. Generowane certyfikaty serwera i klientów są automatycznie podpisywane certyfikatem głównym. Wszystkie wystawione certyfikaty znajdują się w katalogu `issued`, a powiązane z nimi klucze prywatne w katalogu `private`.
 
 Parametr `nazwa` oznacza nazwę podmiotu, dla którego wystawiany jest certyfikat (pole `CN - Common Name`). Zwykle jest to imię i nazwisko. Parametr `nopass` jest opcjonalny i oznacza, że certyfikat nie będzie zabezpieczony hasłem (przydatne, gdy zostaje on wczytany przez program np. serwer).
 
-W niektórych dystrubycjach (np. `Debian` krok pierwszy musi być poprzedzony utworzeniem odpowiedniej struktury katalogów: `make-cadir katalog && cd katalog`. Dodatkowo program `easy-rsa` może nazywać się `easyrsa` i może nie występować w `$PATH` - wtedy wywołanie `make-cadir` w utworzonym folderze umieści dowiązanie symboliczne do właściwego programu.
+W niektórych dystrubycjach (np. `Debian` krok pierwszy musi być poprzedzony utworzeniem odpowiedniej struktury katalogów: `make-cadir katalog && cd katalog`. Dodatkowo program `easy-rsa` może nazywać się `easyrsa` i może nie występować w `$PATH` - wtedy wywołanie `make-cadir` w utworzonym folderze umieści dowiązanie symboliczne do właściwego programu. Należy również zauważyć, że sam program może posiadać inną nazwę, np. `easyrsa`.
 
 ## Przykład uruchomienia programów
 
